@@ -7,6 +7,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.swing.JTextArea;
+
+
+
 public class Parser {
 	private HashMap<String,Node> map;
 	private HashMap<String,Node> newPrograms;
@@ -18,6 +22,8 @@ public class Parser {
 	private String defaultPath="C:\\Users\\";
 	private String outputPath="C:\\Users\\TKout.txt";
 	private String programName="ignore";
+	
+	public enum eTargetType {Target_Region_1, Target_Region_2, Target_Character_1, Target_Character_2, Target_Faction_1,Target_Faction_2};
 	
 	public Parser()
 	{
@@ -461,6 +467,125 @@ public class Parser {
 				
 			}
 		}
+		private String DecideTargetKey(eTargetType target)
+		{
+			String s = null;
+			if(target==eTargetType.Target_Character_1 || target==eTargetType.Target_Character_2)
+				s="GEN_CND_CHARACTER_TEMPLATE";
+			else if(target==eTargetType.Target_Faction_1 || target==eTargetType.Target_Faction_2)
+				s="GEN_CND_FACTION";
+			else if(target==eTargetType.Target_Region_1 || target==eTargetType.Target_Region_2)
+				s="GEN_CND_REGION";
+			return s;
+		}
+		private String DecideTargetIndex(eTargetType target)
+		{
+			String s = null;
+			if(target==eTargetType.Target_Character_1)
+				s="target_character_1";
+			else if(target==eTargetType.Target_Character_2)
+				s="target_character_2";
+			else if(target==eTargetType.Target_Faction_1)
+				s="target_faction_1";
+			else if( target==eTargetType.Target_Faction_2)
+				s="target_faction_2";
+			else if(target==eTargetType.Target_Region_1)
+				s="target_region_1";
+			else if( target==eTargetType.Target_Region_2)
+				s="target_region_2";
+			return s;
+		}
+		public void OutputClonedEventLinesRaw(String Input, String eventKeys, eTargetType target, String type, String OptionalText, JTextArea output1, JTextArea output2) 
+		{
+				//Driver.print("OutputClonedEventLinesRaw");
+				int startingIndex=0;
+				String spacing1="	";
+				String initialEvent="";
+				String initialPreface="";
+				String ReplacementKey="";
+				ArrayList<String> lines= new ArrayList<String>();
+				String[] linesIn = Input.split("\n");
+				String[] eventKeys1 = eventKeys.split("\n");
+				String targetKey = DecideTargetKey(target);
+				String targetIndex= DecideTargetIndex(target);
+				
+				//Driver.print("linesIN="+linesIn.length);
+				//Driver.print("eventKeys1="+eventKeys1.length);
+				//Driver.print("targetKey"+targetKey);
+				//Driver.print("targetIndex"+targetIndex);
+				String newKeys="";
+				String finalReturn="";
+				
+				boolean firstLine=true;
+				for(String keys: eventKeys1)
+				{
+					if(keys.equals(""))
+						break;
+					if (targetKey.equals("GEN_CND_REGION"))
+					{
+						int index= keys.indexOf("_capital");
+						if (index==-1)
+							index= keys.indexOf("_region");
+						ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
+					}
+					else
+					{
+						ReplacementKey= "TODO";
+					}
+
+					for(int i =0; i< linesIn.length; ++i)
+					{ 
+						String line= linesIn[i];
+						if (line.equals(""))
+							break;
+						String noKey=line.substring(0,line.indexOf(spacing1));
+						//Driver.print("nokey="+noKey);		
+						if (firstLine)//first time through grab our starting Index and event key preface
+						{
+							startingIndex=Integer.parseInt(noKey);
+							initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
+							initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
+							//Driver.print("EventName="+initialEvent);
+							firstLine=false;
+							initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
+							initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
+							initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
+							//Driver.print("initialPreface="+initialPreface);
+						}
+						//Check if we need to replace anything
+						if(line.contains(targetKey) && line.contains(targetIndex))
+						{
+							//Driver.print("REPLACE LINE= "+line);
+							//find whats in the middle of them 
+							String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
+							//Driver.print("LINEBEFORE= "+lineBefore);
+							String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
+							//Driver.print("LINEAFTER= "+lineAfter);
+							line= lineBefore+spacing1+keys+spacing1+lineAfter;
+							//Driver.print("LINE FINAL= "+line);
+						}
+						//Add to our modified list 
+						lines.add(line);
+					}
+					//Create our new starting Index
+					startingIndex=startingIndex+lines.size();
+					for(String entry: lines)
+						{
+							//find and update the number id 
+							String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
+							//Driver.print("TMPENTRY="+tmpEntry);
+							//Driver.print("initialPreface"+initialPreface);
+							//Driver.print("ReplacementKey"+ReplacementKey);
+							//Driver.print("startingIndex"+startingIndex++);
+							//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
+							finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry+"\n");
+						}
+					newKeys += initialPreface+OptionalText+ReplacementKey+"_"+type+"\n";
+					
+				}
+				output1.setText(newKeys);
+				output2.setText(finalReturn);
+		}
 		
 		public void OutputIncidentTXT(String eventName)
 		{
@@ -504,6 +629,10 @@ public class Parser {
 		{
 			for(String event: eventNames)
 				OutputDilemmaTXT(event, choices);
+		}
+
+		public static eTargetType eTargetType(int selectedIndex) {
+		return eTargetType.values()[selectedIndex];
 		}
 		
 

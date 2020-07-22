@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -8,6 +9,9 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -28,13 +32,26 @@ public class GUI implements ActionListener{
 	private JPanel mainPanel;
 	private JPanel topPanel;
 	private JPanel centerPanel;
-	private JPanel centerPanel_input;
-	private JPanel centerPanel_output;
 	private JPanel botPanel;
+	
+	//Input
+	JComboBox dropdown;
+	JComboBox targetChoice;
+	JTextField lineChoice;
+	private JPanel centerPanel_input;
 	private JTextArea fieldInput;
-	private JTextArea fieldOuput;
 	private JTextArea fieldInput2;
-	private JTextArea fieldOuput2;
+	JLabel inlabel_left;
+	JLabel inlabel_right;
+
+	//Output
+	private JPanel centerPanel_output;
+	private JTextArea fieldOutput;
+	private JTextArea fieldOutput2;
+	JLabel outlabel_left;
+	JLabel outlabel_right;
+	
+	
 	public GUI ()
 	{
 		mainFrame = new JFrame("Grid Layout");
@@ -49,56 +66,80 @@ public class GUI implements ActionListener{
 		buttonGenerate.addActionListener(this); // Calls actionPerformed() implemented by ActionListener
 		
 		String[] dropDownOptions= {"Dilemma", "Incident"};
-		JComboBox dropdown = new JComboBox(dropDownOptions);
+		dropdown = new JComboBox(dropDownOptions);
 		dropdown.setSelectedIndex(0);
 		dropdown.addActionListener(this);
+		String[] targetOptions= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
+		targetChoice = new JComboBox(targetOptions);
+		targetChoice.setSelectedIndex(0);
+		targetChoice.addActionListener(this);
+		lineChoice= new JTextField("Optional key addon");
 		
 		JLabel labelDropdown = new JLabel("Clone Type:", JLabel.CENTER);
+		//Input Creation
 		JLabel label_input = new JLabel("Input");
 		label_input.setForeground(Color.white);
 		label_input.setHorizontalAlignment(SwingConstants.CENTER);
+		inlabel_left = new JLabel("New Values");
+		inlabel_left.setForeground(Color.white);
+		inlabel_left.setHorizontalAlignment(SwingConstants.CENTER);
+		inlabel_right = new JLabel("Lines To Clone");
+		inlabel_right.setForeground(Color.white);
+		inlabel_right.setHorizontalAlignment(SwingConstants.CENTER);
+		//Output Creation
 		JLabel label_output = new JLabel("Output");
 		label_output.setForeground(Color.white);
 		label_output.setHorizontalAlignment(SwingConstants.CENTER);
-		JLabel grabBagInput= new JLabel();
-		grabBagInput.setLayout(new GridBagLayout());
-		fieldInput= new JTextArea(20,20);
-		fieldOuput= new JTextArea("EventKeys");
-		fieldInput2= new JTextArea("ToCopy");
-		fieldOuput2= new JTextArea("OutputedLines");
+		outlabel_left = new JLabel("New Keys");
+		outlabel_left.setForeground(Color.white);
+		outlabel_left.setHorizontalAlignment(SwingConstants.CENTER);
+		outlabel_right = new JLabel("New Lines");
+		outlabel_right.setForeground(Color.white);
+		outlabel_right.setHorizontalAlignment(SwingConstants.CENTER);
+
+		fieldInput= new JTextArea(2,2);
+		fieldOutput= new JTextArea(2,2);
+		fieldInput2= new JTextArea(2,2);
+		fieldOutput2= new JTextArea(2,2);
 		JScrollPane scroll1 = new JScrollPane(fieldInput);
-		JScrollPane scroll2 = new JScrollPane(fieldOuput);
-		JScrollPane scroll3 = new JScrollPane(fieldInput2);
-		JScrollPane scroll4 = new JScrollPane(fieldOuput2);
-		scroll1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		scroll1.setBounds(fieldInput.getBounds());
-		scroll1.getViewport().setBackground(Color.white);
+		JScrollPane scroll2 = new JScrollPane(fieldInput2);
+		JScrollPane scroll3 = new JScrollPane(fieldOutput);
+		JScrollPane scroll4 = new JScrollPane(fieldOutput2);
+		SetScrollBar(scroll1, fieldInput);
+		SetScrollBar(scroll2, fieldInput2);
+		SetScrollBar(scroll3, fieldOutput);
+		SetScrollBar(scroll4, fieldOutput2);
 		//scroll1.getViewport().add(fieldInput);
 		
 
+		//TopPanel
 		topPanel.add(labelDropdown);
 		topPanel.add(dropdown);
-		
+		//Center Main 
 		centerPanel.setLayout(new GridLayout(2,1, 5, 10) );
+		//Input
 		centerPanel_input.setLayout(new BorderLayout() );
-		centerPanel_output.setLayout(new BorderLayout() );
 		centerPanel_input.add(label_input, BorderLayout.PAGE_START);
+		JLabel grabBagInput= new JLabel();
+		grabBagInput.setLayout(new GridBagLayout());
 		centerPanel_input.add(grabBagInput, BorderLayout.CENTER);
-		GridBagConstraints c = new GridBagConstraints();   
-	    c.anchor = GridBagConstraints.WEST;
-	    c.insets = new Insets(1,20,1,30);
-	    c.fill=GridBagConstraints.HORIZONTAL;
-	    c.weightx = 1.0;
-	    c.weighty = 1.0;
-		//////grabBagInput.add(fieldInput, c);
-		grabBagInput.add(scroll1, c);
-		c.insets = new Insets(1,30,1,20);
-		c.anchor = GridBagConstraints.EAST;
-		grabBagInput.add(fieldInput2, c);
-		grabBagInput.add(scroll2, c);
+		SetGrabBagColumn( grabBagInput,  inlabel_left, 0, 0,  new Insets(1,1,1,1));
+		SetGrabBagColumn( grabBagInput,  inlabel_right, 0, 1, new Insets(1,1,1,1));
+		SetGrabBagColumn( grabBagInput,  scroll1, 1, 0, new Insets(1,10,1,10));
+		SetGrabBagColumn( grabBagInput,  scroll2, 1, 1, new Insets(1,10,1,10));
+		SetGrabBagColumn( grabBagInput,  targetChoice, 2, 0, new Insets(1,10,1,10));
+		SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
+		//Output
+		centerPanel_output.setLayout(new BorderLayout() );
+		JLabel grabBagInput2= new JLabel();
+		grabBagInput2.setLayout(new GridBagLayout());
 		centerPanel_output.add(label_output, BorderLayout.PAGE_START);
-		centerPanel_output.add(fieldOuput, BorderLayout.CENTER);
-		centerPanel_output.add(fieldOuput2, BorderLayout.CENTER);
+		centerPanel_output.add(grabBagInput2, BorderLayout.CENTER);
+		SetGrabBagColumn( grabBagInput2,  outlabel_left, 0, 0,  new Insets(1,1,1,1));
+		SetGrabBagColumn( grabBagInput2,  outlabel_right, 0, 1, new Insets(1,1,1,1));
+		SetGrabBagColumn( grabBagInput2,  scroll3, 1, 0, new Insets(1,10,1,10));
+		SetGrabBagColumn( grabBagInput2,  scroll4, 1, 1, new Insets(1,10,1,10));
+	
 		//topPanel.setSize(500, 100);
 		
 		centerPanel.add(centerPanel_input);
@@ -130,14 +171,54 @@ public class GUI implements ActionListener{
 		System.out.println("the Height of CenterPanel_input="+centerPanel_input.getHeight());
 		//fieldInput.setHorizontalAlignment(JTextField.LEFT);
 		scroll1.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*5));
+		scroll2.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*5));
+		scroll3.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*5));
+		scroll4.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*5));
+		
 		//fieldInput2.setHorizontalAlignment(JTextField.RIGHT);
 		//fieldInput2.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*5));
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent a) {
-		// TODO Auto-generated method stub
+		//System.out.println("Action Event="+a.getActionCommand());
+		if (a.getActionCommand().equals("Generate"))
+			Generate();
+		else
+			Driver.print("Did not generate?");
+	}
+	private void Generate()
+	{
+		//Driver.print("Trying to Generate:");
+		Parser p= new Parser();
+		//Driver.print("fieldInput1="+ fieldInput.getText());
+		//Driver.print("fieldINput2="+ fieldInput2.getText());
+		String OptionalText=lineChoice.getText();
+		if (OptionalText.equals("Optional key addon")) // should probably make final
+			OptionalText="";
 		
+		p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),dropdown.getSelectedItem().toString(), OptionalText, fieldOutput, fieldOutput2 );	
+
+	
+	}
+	private void SetScrollBar(JScrollPane scrollBar, JTextArea textBox)
+	{
+		scrollBar.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollBar.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollBar.setBounds(textBox.getBounds());
+	}
+	private void SetGrabBagColumn(JLabel grabBagInput, Component scrollBar, int row, int col, Insets inset)
+	{
+		GridBagConstraints c = new GridBagConstraints();   
+	    //c.anchor = GridBagConstraints.WEST;
+	    c.insets = inset;
+	    c.fill=GridBagConstraints.HORIZONTAL;
+	    c.gridx=col;
+	    c.gridy=row;
+	    c.weightx = 1.0;
+	    //c.weighty = 1.0;
+		//////grabBagInput.add(fieldInput, c);
+		grabBagInput.add(scrollBar, c);
 	}
 	
 	

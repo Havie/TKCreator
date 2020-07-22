@@ -10,10 +10,10 @@ public class Driver {
 	{
 		//print("----TK Creator------");
 		GUI gui=new GUI();
-		
+		//InIDETest();
 	}
 	
-	public void InIDETest() throws IOException
+	public static void InIDETest() throws IOException
 	{
 		Parser p= new Parser();
 		try {
