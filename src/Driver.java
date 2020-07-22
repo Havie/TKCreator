@@ -9,6 +9,12 @@ public class Driver {
 	public static void main (String[] args) throws IOException 
 	{
 		//print("----TK Creator------");
+		GUI gui=new GUI();
+		
+	}
+	
+	public void InIDETest() throws IOException
+	{
 		Parser p= new Parser();
 		try {
 			p.TraceProgram(FileDIR, "mod");
@@ -42,10 +48,7 @@ public class Driver {
 		p.OutputClonedEventLines(FileDIR+"dilemma_options.txt", eventKeys);
 		
 		p.OutputDilemmaTXT("3k_lua_yuanshe_helps_lubi_dilemma",3);
-
 	}
-	
-	
 
 
 
