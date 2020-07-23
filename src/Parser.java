@@ -522,11 +522,38 @@ public class Parser {
 					if(keys.equals(""))
 						break;
 					if (targetKey.equals("GEN_CND_REGION"))
-					{
+					{ //"3k_main_dongjun_capital" --> "dongjun" or "3k_main_dongjun_resource_1" -->"dongjun"
 						int index= keys.indexOf("_capital");
 						if (index==-1)
-							index= keys.indexOf("_region");
+							{
+								index= keys.indexOf("_resource");
+								if(index==-1)
+									{output1.setText("InvalidEntry");
+										return;
+									}
+							}
 						ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
+					}
+					if (targetKey.equals("GEN_CND_FACTION"))
+					{ //"3k_main_faction_cao_cao" --> "cao_cao"
+						int index= keys.indexOf("_faction");
+						if(index==-1)
+							{output1.setText("InvalidEntry");
+								return;
+							}
+						ReplacementKey=keys.substring(keys.indexOf("_faction")+9, keys.length());
+					}
+					if (targetKey.equals("GEN_CND_CHARACTER_TEMPLATE"))
+					{ //"3k_main_template_historical_lu_bu_hero_fire" --> "lu_bu" 
+						//"3k_dlc05_template_historical_lu_bu_hero_fire" --> "lu_bu" 
+						String id="_template_historical_";
+						int index= keys.indexOf(id);
+						if (index==-1){output1.setText("InvalidEntry");return;}
+						else 
+						{
+							if (keys.indexOf("_hero")==-1){output1.setText("InvalidEntry");return;}
+						}
+						ReplacementKey=keys.substring(index+id.length(), keys.indexOf("_hero"));
 					}
 					else
 					{
@@ -542,7 +569,10 @@ public class Parser {
 						//Driver.print("nokey="+noKey);		
 						if (firstLine)//first time through grab our starting Index and event key preface
 						{
-							startingIndex=Integer.parseInt(noKey);
+							startingIndex=0;
+							try{Integer.parseInt(noKey);}
+							catch(NumberFormatException e){startingIndex=0;}
+							
 							initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
 							initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
 							//Driver.print("EventName="+initialEvent);
@@ -587,26 +617,39 @@ public class Parser {
 				output2.setText(finalReturn);
 		}
 		
-		public String OutputIncidentTXT(String eventName)
+		public String OutputIncidentTitleTXT(String eventName)
 		{
 			String title="3k_main_title_";
+			String spacing1= "	"; //double check 
+			//Driver.print(title+eventName+spacing1+"[PH]Title");
+			return title+eventName+spacing1+"[PH]Title"+"\n";
+		}
+		public String OutputIncidentDescTXT(String eventName)
+		{
 			String description="3k_main_description_";
 			String spacing1= "	"; //double check 
-			Driver.print(title+eventName+spacing1+"[PH]Title");
-			Driver.print(description+eventName+spacing1+"[PH]Desc");
-			return title+eventName+spacing1+"[PH]Title"+"\n"+description+eventName+spacing1+"[PH]Desc"+"\n";
+			//Driver.print(description+eventName+spacing1+"[PH]Desc");
+			return description+eventName+spacing1+"[PH]Desc"+"\n";
 		}
 		public String OutputIncidentTXT(ArrayList<String> eventNames)
 		{	String s="";
 			for(String event: eventNames)
-				s+=OutputIncidentTXT(event);
+				s+=OutputIncidentTitleTXT(event);
+			for(String event: eventNames)
+				s+=OutputIncidentDescTXT(event);
 			return s;
 		}
-		public String OutputIncidentTXT(String[] eventNames)
-		{	String s="";
+		
+		public void OutputIncidentTXT(String[] eventNames ,JTextArea output1, JTextArea output2)
+		{	
+			String s="";
 			for(String event: eventNames)
-				s+=OutputIncidentTXT(event);
-			return s;
+				s+=OutputIncidentTitleTXT(event);
+			output1.setText(s);
+			s="";
+			for(String event: eventNames)
+				s+=OutputIncidentDescTXT(event);
+			output2.setText(s);
 		}
 		public String OutputDilemmaMainTXT(String eventName, int choices)
 		{	String s="";
