@@ -371,6 +371,68 @@ public class Parser {
 		 * @param targetFactions (ArrayList<String>)
 		 * @param targetRegions (ArrayList<String>)
 		 */
+		public void OutputNewEventOptionLines(int startingIndex, String eventKey, ArrayList<String> targetChars,ArrayList<String> targetFactions,ArrayList<String> targetRegions, JTextArea output1, JTextArea output2)
+		{
+			String spacing1= "	";
+			String spacing2= "	";
+			String spacing3= "	";
+			String spacing4= "	"; 
+			int index= startingIndex;
+			String s="";
+			
+			s+=((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default"+"\n");
+			s+=((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1"+"\n");
+			//Ini the vars for factions 
+			String target="target_faction_";
+			int targetCount=1;
+			String cndTarget="GEN_TARGET_FACTION";
+			String cndTemplate="GEN_CND_FACTION";
+			for(String k: targetFactions)
+			{
+				if(k.equals("default"))
+				{
+					s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
+					targetCount++;
+				}
+				else
+				{
+					s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
+					s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount)+"\n");
+					targetCount++;
+				}
+			}
+			//reset vars for chars 
+			target="target_character_";
+			targetCount=1;
+			cndTarget="GEN_TARGET_CHARACTER";
+			cndTemplate="GEN_CND_CHARACTER_TEMPLATE";
+			for(String k: targetChars)
+			{
+				s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
+				s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount)+"\n");
+				targetCount++;
+			}
+			//reset for regions
+			target="target_region_";
+			targetCount=1;
+			cndTarget="GEN_TARGET_REGION";
+			cndTemplate="GEN_CND_REGION";
+			for(String k: targetRegions)
+			{
+				s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
+				s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount)+"\n");
+				targetCount++;
+			}
+			output1.setText(s);
+		}
+		/**
+		 *Deprecated Used for Testing, Prints to console
+		 * @param startingIndex
+		 * @param eventKey
+		 * @param targetChars
+		 * @param targetFactions
+		 * @param targetRegions
+		 */
 		public void OutputNewEventOptionLines(int startingIndex, String eventKey, ArrayList<String> targetChars,ArrayList<String> targetFactions,ArrayList<String> targetRegions)
 		{
 			String spacing1= "	";
@@ -570,7 +632,7 @@ public class Parser {
 						if (firstLine)//first time through grab our starting Index and event key preface
 						{
 							startingIndex=0;
-							try{Integer.parseInt(noKey);}
+							try{startingIndex=Integer.parseInt(noKey);}
 							catch(NumberFormatException e){startingIndex=0;}
 							
 							initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());

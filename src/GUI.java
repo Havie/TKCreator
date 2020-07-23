@@ -36,6 +36,8 @@ public class GUI implements ActionListener{
 
 	//Input
 	//NEW 
+	JLabel inLabelEventKey ;
+	JLabel inLabelStartingIndex ;
 	JLabel inLabelChar1;
 	JLabel inLabelChar2;
 	JLabel inLabelChar3;
@@ -45,7 +47,9 @@ public class GUI implements ActionListener{
 	JLabel inLabelRegion1;
 	JLabel inLabelRegion2;
 	JLabel inLabelRegion3;
-
+	
+	JTextField inEventKey;
+	JTextField inStartingIndex;
 	JTextField inChar1;
 	JTextField inChar2;
 	JTextField inChar3;
@@ -89,11 +93,12 @@ public class GUI implements ActionListener{
 	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED, Color.BLACK};
 
 	//Vars
-	private int mode=0;
+	private int modeChoice=0;
 	private String lastKnownInput_1="";
 	private String lastKnownInput_2="";
 	private String lastKnownInputText_1="";
 	private String lastKnownInputText_2="";
+	private ArrayList<JTextField> boxes;
 
 	public GUI ()
 	{
@@ -104,7 +109,7 @@ public class GUI implements ActionListener{
 		centerPanel_input= new JPanel();
 		centerPanel_output= new JPanel();
 		botPanel= new JPanel();
-
+		boxes= new ArrayList<JTextField>();
 		JButton buttonGenerate= new JButton("Generate");
 		buttonGenerate.addActionListener(this); // Calls actionPerformed() implemented by ActionListener
 
@@ -186,7 +191,7 @@ public class GUI implements ActionListener{
 		mainFrame.setTitle("TK Creator    by Havie");
 		mainFrame.pack();
 		mainFrame.setVisible(true);
-		mainFrame.setSize(800, 600);
+		mainFrame.setSize(1280, 720);
 
 		//have to do here once window is created 
 		SizeTextBoxes();
@@ -208,6 +213,11 @@ public class GUI implements ActionListener{
 		targetChoice.setSelectedIndex(0);
 		targetChoice.addActionListener(this);
 		lineChoice= new JTextField("Optional key addon");
+		
+		//Output Changes 
+		outlabel_left.setText("New Keys");
+		outlabel_right.setText("New Lines");
+		
 		//Input Creation
 		JLabel label_input = new JLabel("Input");
 		label_input.setForeground(Color.white);
@@ -257,17 +267,13 @@ public class GUI implements ActionListener{
 		inlabel_right = new JLabel("Keys");
 		inlabel_right.setForeground(Color.white);
 		inlabel_right.setHorizontalAlignment(SwingConstants.CENTER);
-		//Output Creation
-		JLabel label_output = new JLabel("Output");
-		label_output.setForeground(Color.white);
-		label_output.setHorizontalAlignment(SwingConstants.CENTER);
-		outlabel_left = new JLabel("New Keys");
-		outlabel_left.setForeground(Color.white);
-		outlabel_left.setHorizontalAlignment(SwingConstants.CENTER);
-		outlabel_right = new JLabel("New Lines");
-		outlabel_right.setForeground(Color.white);
-		outlabel_right.setHorizontalAlignment(SwingConstants.CENTER);
-
+		
+		//Output Changes
+		outlabel_left.setText("New Options");
+		outlabel_right.setText("New Payloads");
+		
+		inLabelEventKey = new JLabel("Event Key");
+		inLabelStartingIndex = new JLabel("Starting Index");
 		inLabelChar1 = new JLabel("Character 1");
 		inLabelChar2  = new JLabel("Character 2");
 		inLabelChar3 = new JLabel("Character 3");
@@ -277,13 +283,17 @@ public class GUI implements ActionListener{
 		inLabelRegion1 = new JLabel("Region 1");
 		inLabelRegion2 = new JLabel("Region 2");
 		inLabelRegion3 = new JLabel("Region 3");
+		inLabelEventKey.setForeground(Color.GREEN);
+		inLabelEventKey.setHorizontalAlignment(SwingConstants.CENTER);
+		inLabelStartingIndex.setForeground(Color.GREEN);
+		inLabelStartingIndex.setHorizontalAlignment(SwingConstants.CENTER);
 		inLabelChar1.setForeground(Color.white);
 		inLabelChar1.setHorizontalAlignment(SwingConstants.CENTER);
 		inLabelChar2.setForeground(Color.white);
 		inLabelChar2.setHorizontalAlignment(SwingConstants.CENTER);
 		inLabelChar3.setForeground(Color.white);
 		inLabelChar3.setHorizontalAlignment(SwingConstants.CENTER);
-		inLabelFaction1.setForeground(Color.white);
+		inLabelFaction1.setForeground(Color.GREEN);
 		inLabelFaction1.setHorizontalAlignment(SwingConstants.CENTER);
 		inLabelFaction2.setForeground(Color.white);
 		inLabelFaction2.setHorizontalAlignment(SwingConstants.CENTER);
@@ -295,16 +305,30 @@ public class GUI implements ActionListener{
 		inLabelRegion2.setHorizontalAlignment(SwingConstants.CENTER);
 		inLabelRegion3.setForeground(Color.white);
 		inLabelRegion3.setHorizontalAlignment(SwingConstants.CENTER);
-
-		inChar1= new JTextField("unused");
-		inChar2= new JTextField("unused");
-		inChar3= new JTextField("unused");
-		inFaction1= new JTextField("unused");
-		inFaction2= new JTextField("unused");
-		inFaction3= new JTextField("unused");
-		inRegion1= new JTextField("unused");
-		inRegion2= new JTextField("unused");
-		inRegion3= new JTextField("unused");
+		
+		inEventKey =new JTextField("key_name");
+		//inEventKey.setPreferredSize(new Dimension(1000,1000));
+		inStartingIndex=new JTextField("0");
+		inChar1= new JTextField("unused",300);
+		inChar2= new JTextField("unused",300);
+		inChar3= new JTextField("unused",300);
+		inFaction1= new JTextField("default",300);
+		inFaction2= new JTextField("unused",300);
+		inFaction3= new JTextField("unused",300);
+		inRegion1= new JTextField("unused",300);
+		inRegion2= new JTextField("unused",300);
+		inRegion3= new JTextField("unused",300);
+		boxes.add(inEventKey);
+		boxes.add(inStartingIndex);
+		boxes.add(inChar1);
+		boxes.add(inChar2);
+		boxes.add(inChar3);
+		boxes.add(inFaction1);
+		boxes.add(inFaction2);
+		boxes.add(inFaction3);
+		boxes.add(inRegion1);
+		boxes.add(inRegion2);
+		boxes.add(inRegion3);
 
 		//Input
 		centerPanel_input.setLayout(new BorderLayout() );
@@ -313,26 +337,30 @@ public class GUI implements ActionListener{
 		grabBagInput.setLayout(new GridBagLayout());
 		centerPanel_input.add(grabBagInput, BorderLayout.CENTER);
 		int i=0;
-		SetGrabBagColumn( grabBagInput,  inlabel_left, i, 0,  new Insets(1,1,1,1));
-		SetGrabBagColumn( grabBagInput,  inlabel_right, i, 1, new Insets(1,1,1,1));
-		SetGrabBagColumn( grabBagInput,  inLabelChar1, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inChar1, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelChar2, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inChar2, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelChar3, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inChar3, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelFaction1, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inFaction1, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelFaction2, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inFaction2, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelFaction3, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inFaction3, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelRegion1, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inRegion1, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelRegion2, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inRegion2, i, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inLabelRegion3, ++i, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  inRegion3, i, 1, new Insets(1,10,1,10));
+		SetGrabBagColumn( grabBagInput,  inlabel_left, i, 0,  new Insets(1,1,1,1), GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inlabel_right, i, 1, new Insets(1,1,1,1),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelEventKey, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inEventKey, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelStartingIndex, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inStartingIndex, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelChar1, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inChar1, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelChar2, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inChar2, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelChar3, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inChar3, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelFaction1, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inFaction1, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelFaction2, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inFaction2, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelFaction3, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inFaction3, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelRegion1, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inRegion1, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelRegion2, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inRegion2, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inLabelRegion3, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( grabBagInput,  inRegion3, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
 		ReDrawWindow();
 	}
 	private void ClearCenter()
@@ -342,16 +370,25 @@ public class GUI implements ActionListener{
 	}
 	private void SizeTextBoxes()
 	{
+		//NB: using centerPanel_input width seems to be ignored everywhere, as I can set it to the width and its still much smaller
 		scroll1.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*9));
 		scroll2.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*9));
 		scroll3.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*9));
 		scroll4.setPreferredSize(new Dimension(centerPanel_input.getWidth()/2, centerPanel_input.getHeight()*9));
+		for(JTextField jf: boxes)
+		{
+			if(jf!=null)
+				{
+				jf.setMinimumSize(new Dimension(centerPanel.getWidth(),20));
+				jf.setPreferredSize(new Dimension(300,45)); //GridBag Lay out ignores this
+				}
+		}
 	}
 	/**
 	 * A Little trick to change to color of drop down menu items
 	 * @param valid
 	 */
-	private void setRenderer(boolean valid)
+	private void setDropdownRender(boolean valid)
 	{	
 		if (valid)
 			renderer.setColors(VALID);
@@ -361,6 +398,7 @@ public class GUI implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent a) {
 		//System.out.println("Action Event="+a.getActionCommand());
+		//System.out.println("Action Event Source="+ a.getSource().toString());
 		if (a.getActionCommand().equals("Generate"))
 			Generate();
 		else if (a.getActionCommand().equals("comboBoxChanged"))
@@ -377,29 +415,88 @@ public class GUI implements ActionListener{
 		String OptionalText=lineChoice.getText();
 		if (OptionalText.equals("Optional key addon")) // should probably make final
 			OptionalText="";
-		if(mode==0 || mode==1)
-			p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),modeChoiceDropdown.getSelectedItem().toString(), OptionalText, fieldOutput, fieldOutput2 );	
-		else if (mode==2)
+		if( modeDropdown.getSelectedIndex()==1) //CLONED
 		{
-			if(targetChoice.getSelectedIndex()==0)
+			if(modeChoice==0 || modeChoice==1)
+				p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),modeChoiceDropdown.getSelectedItem().toString(), OptionalText, fieldOutput, fieldOutput2 );	
+			else if (modeChoice==2)
 			{
-				int choices=2;
-				if(!lineChoice.getText().equals("Enter # of Choices (dilemma only)"))
+				if(targetChoice.getSelectedIndex()==0)
 				{
-					try{choices=Integer.parseInt(lineChoice.getText());}
-					catch(NumberFormatException e){choices=2;}
+					int choices=2;
+					if(!lineChoice.getText().equals("Enter # of Choices (dilemma only)"))
+					{
+						try{choices=Integer.parseInt(lineChoice.getText());}
+						catch(NumberFormatException e){choices=2;}
+					}
+					p.OutputDilemmaTXT(fieldInput.getText().split("\n"),choices, fieldOutput, fieldOutput2 );
 				}
-				p.OutputDilemmaTXT(fieldInput.getText().split("\n"),choices, fieldOutput, fieldOutput2 );
+				else
+				{
+					p.OutputIncidentTXT(fieldInput.getText().split("\n"),fieldOutput, fieldOutput2 );
+				}
+	
 			}
 			else
-			{
-				p.OutputIncidentTXT(fieldInput.getText().split("\n"),fieldOutput, fieldOutput2 );
-			}
-
+				Driver.print("not sure");
 		}
-		else
-			Driver.print("not sure");
+		else // New ==0 (written reversed order at development time)
+		{
+			/*
+			 * JTextField inChar1;
+				JTextField inChar2;
+				JTextField inChar3;
+				JTextField inFaction1;
+				JTextField inFaction2;
+				JTextField inFaction3;
+				JTextField inRegion1;
+				JTextField inRegion2;
+				JTextField inRegion3;
+			 */
+			
+			//Build an Array out of the types
+			ArrayList<String> targetCharacters= new ArrayList<String>();
+			ArrayList<String> targetFactions= new ArrayList<String>();
+			ArrayList<String> targetRegions= new ArrayList<String>();
+			
+			AddToList(inChar1.getText(), targetCharacters,1);
+			AddToList(inChar2.getText(), targetCharacters,1);
+			AddToList(inChar3.getText(), targetCharacters,1);
+			
+			AddToList(inFaction1.getText(), targetFactions,2);
+			AddToList(inFaction2.getText(), targetFactions,2);
+			AddToList(inFaction3.getText(), targetFactions,2);
+			
+			AddToList(inRegion1.getText(), targetRegions,3);
+			AddToList(inRegion2.getText(), targetRegions,3);
+			AddToList(inRegion3.getText(), targetRegions,3);
+			
+			int index=0;
+			try{index=Integer.parseInt(inStartingIndex.getText());}
+			catch(Exception e){index=0;}
+			
+			p.OutputNewEventOptionLines( index, inEventKey.getText(), targetCharacters,targetFactions,targetRegions, fieldOutput, fieldOutput2);
+			
+		}
 
+	}
+	private void AddToList(String key, ArrayList<String> list, int type)
+	{
+		if(CheckFormatting(key, type))
+			list.add(key);
+	}
+	private boolean CheckFormatting(String s, int type)
+	{
+		switch(type)
+		{
+		case 1:
+			return s.contains("template_historical");
+		case 2:
+			return s.contains("main_faction") || s.equals("default");
+		case 3:
+			return s.contains("3k_main_");
+		}
+		return false;
 	}
 	private void SetScrollBar(JScrollPane scrollBar, JTextArea textBox)
 	{
@@ -420,35 +517,43 @@ public class GUI implements ActionListener{
 				{
 				case 0: //NEW 
 					SetUpNew();
-					setRenderer(true);
+					setDropdownRender(true);
 					SwitchLogic(modeChoiceDropdown);
 					break;
 				case 1: //CLONE
 					SetUpCloned();
-					setRenderer(false);
+					setDropdownRender(false);
 					SwitchLogic(modeChoiceDropdown);
 					break;
 				}
 			}
 			if(box==targetChoice) //CHANGED Cloned Event Target
 			{
-				switch(box.getSelectedIndex())
+				if (modeChoiceDropdown.getSelectedIndex()==2) //TEXT
 				{
-				case 0: //dilemma 
-					outlabel_left.setText("Titles/Descriptions");
-					outlabel_right.setText("Choice Labels");
-					break;
-				case 1: //incident
-					outlabel_left.setText("Titles");
-					outlabel_right.setText("Descriptions");
-					break;
+					switch(box.getSelectedIndex())
+					{
+					case 0: //dilemma 
+						Driver.print("IS THIS HAPPEING? (1)");
+						outlabel_left.setText("Titles/Descriptions");
+						outlabel_right.setText("Choice Labels");
+						break;
+					case 1: //incident
+						Driver.print("IS THIS HAPPEING? (2)");
+						outlabel_left.setText("Titles");
+						outlabel_right.setText("Descriptions");
+						break;
+					}
+				}
+				else
+				{
+					outlabel_left.setText("New Keys");
+					outlabel_right.setText("New Lines");
 				}
 			}
 			else if(box==modeChoiceDropdown) //Changed TYPE
 			{
-				Driver.print("WE ARE SWITCHING on modeChoiceDropdown");
-				// {"Dilemma", "Incident", "Text", "Other"};
-				// Cant do  DROPDOWNOPTIONS[0] because objects in a final array arent const
+				// Cant do  DROPDOWNOPTIONS[0] because objects in a final array aren't const
 				switch(box.getSelectedItem().toString())
 				{
 				case "Dilemma":
@@ -472,19 +577,21 @@ public class GUI implements ActionListener{
 
 	private void ChangeDisplay(int modeChange)
 	{	
-		int lastMode=mode;
-		mode=modeChange;
-		switch(mode)
+		int lastMode=modeChoice;
+		modeChoice=modeChange;
+		switch(modeChoice)
 		{
 		case 0:
 			//since i cant seem to have 1 hidden Jtext area behind the other, we will just save the info 
 			if(lastMode==2 ) //TEXT
 			{
 				if (modeDropdown.getSelectedIndex() == 0) //NEW
-					SetUpNew();
+					{
+						SetUpNew();
+					}
 				else if (modeDropdown.getSelectedIndex() == 1) //CLONED
 				{
-					setRenderer(false);
+					setDropdownRender(false);
 					lastKnownInputText_1=fieldInput.getText();
 					lastKnownInputText_2=fieldInput2.getText();
 					fieldInput.setText(lastKnownInput_1);
@@ -492,14 +599,18 @@ public class GUI implements ActionListener{
 					fieldInput2.setVisible(true);
 					inlabel_left.setText("New Values");
 					inlabel_right.setText("Lines To Clone");
+					Driver.print("CHANGED TO New Keys");
 					outlabel_left.setText("New Keys");
 					outlabel_right.setText("New Lines");
 					targetChoice.removeAllItems();
 					lineChoice.setText("Optional key addon");
 					fieldOutput.setText("");
 					fieldOutput2.setText("");
+					Driver.print("(1)DID THIS TRIGGER ACTION?");
 					for(String s : TARGETOPTIONS)
 						targetChoice.addItem(s);
+					
+
 				}
 
 			}
@@ -511,7 +622,7 @@ public class GUI implements ActionListener{
 					SetUpNew();
 				else if (modeDropdown.getSelectedIndex() == 1) //CLONED
 				{
-					setRenderer(false);
+					setDropdownRender(false);
 					lastKnownInputText_1=fieldInput.getText();
 					lastKnownInputText_2=fieldInput2.getText();
 					fieldInput.setText(lastKnownInput_1);
@@ -525,8 +636,10 @@ public class GUI implements ActionListener{
 					fieldOutput.setText("");
 					fieldOutput2.setText("");
 					lineChoice.setText("Optional key addon");
+					Driver.print("(2)DID THIS TRIGGER ACTION?");
 					for(String s : TARGETOPTIONS)
 						targetChoice.addItem(s);
+
 				}
 			}
 			break;
@@ -535,10 +648,10 @@ public class GUI implements ActionListener{
 			if (modeDropdown.getSelectedIndex() == 0) //NEW
 			{
 				SetUpCloned();
-				setRenderer(true);
+				setDropdownRender(true);
 			}
 			else
-				setRenderer(false);
+				setDropdownRender(false);
 
 
 			lastKnownInput_1=fieldInput.getText();
@@ -548,6 +661,7 @@ public class GUI implements ActionListener{
 			fieldInput2.setVisible(false);
 			inlabel_left.setText("Event Names");
 			inlabel_right.setText("Unused");
+			Driver.print(" CHANGED TO Titles/Descriptions");
 			outlabel_left.setText("Titles/Descriptions");
 			outlabel_right.setText("Choice Labels");
 			targetChoice.removeAllItems();
@@ -557,7 +671,6 @@ public class GUI implements ActionListener{
 			for(String s : TEXTOPTIONS)
 				targetChoice.addItem(s);
 
-			
 
 			break;
 		case 3:
@@ -576,18 +689,23 @@ public class GUI implements ActionListener{
 		}
 
 	}
-	private void SetGrabBagColumn(JLabel grabBagInput, Component scrollBar, int row, int col, Insets inset)
+	private void SetGrabBagColumn(JLabel pane, Component component, int row, int col, Insets inset)
+	{
+		SetGrabBagColumn( pane,  component, row,  col,  inset, 1);
+	}
+	private void SetGrabBagColumn(JLabel pane, Component component, int row, int col, Insets inset, float weight)
 	{
 		GridBagConstraints c = new GridBagConstraints();   
 		//c.anchor = GridBagConstraints.WEST;
 		c.insets = inset;
-		c.fill=GridBagConstraints.HORIZONTAL;
+		c.fill= GridBagConstraints.HORIZONTAL;
 		c.gridx=col;
 		c.gridy=row;
-		c.weightx = 1.0;
+		c.weightx = weight;
+		//c.anchor= GridBagConstraints.CENTER;
 		//c.weighty = 1.0;
 		//////grabBagInput.add(fieldInput, c);
-		grabBagInput.add(scrollBar, c);
+		pane.add(component, c);
 	}
 
 
