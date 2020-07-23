@@ -587,50 +587,84 @@ public class Parser {
 				output2.setText(finalReturn);
 		}
 		
-		public void OutputIncidentTXT(String eventName)
+		public String OutputIncidentTXT(String eventName)
 		{
 			String title="3k_main_title_";
 			String description="3k_main_description_";
 			String spacing1= "	"; //double check 
 			Driver.print(title+eventName+spacing1+"[PH]Title");
 			Driver.print(description+eventName+spacing1+"[PH]Desc");
+			return title+eventName+spacing1+"[PH]Title"+"\n"+description+eventName+spacing1+"[PH]Desc"+"\n";
 		}
-		public void OutputIncidentTXT(ArrayList<String> eventNames)
-		{
+		public String OutputIncidentTXT(ArrayList<String> eventNames)
+		{	String s="";
 			for(String event: eventNames)
-				OutputIncidentTXT(event);
+				s+=OutputIncidentTXT(event);
+			return s;
 		}
-		public void OutputDilemmaTXT(String eventName, int choices)
-		{
+		public String OutputIncidentTXT(String[] eventNames)
+		{	String s="";
+			for(String event: eventNames)
+				s+=OutputIncidentTXT(event);
+			return s;
+		}
+		public String OutputDilemmaMainTXT(String eventName, int choices)
+		{	String s="";
 			String title="3k_main_title_";
 			String description="3k_main_description_";
+			String spacing1= "	"; //double check 
+			//Driver.print(title+eventName+spacing1+"[PH]Title");
+			s+=(title+eventName+spacing1+"[PH]Title"+"\n");
+			//Driver.print(description+eventName+spacing1+"[PH]Desc");
+			s+=(description+eventName+spacing1+"[PH]Desc"+"\n");
+			//Driver.print(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title");
+			
+			return s;
+		}
+		public String OutputDilemmaChoiceTXT(String eventName, int choices)
+		{	String s="";
 			String choiceTitle="3k_main_choice_title_";
 			String choiceLabel="3k_main_choice_label_";
 			String spacing1= "	"; //double check 
-			Driver.print(title+eventName+spacing1+"[PH]Title");
-			Driver.print(description+eventName+spacing1+"[PH]Desc");
-			Driver.print(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title");
+			//Choices
+			s+=(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title"+"\n");
 			if(choices>1)
-				Driver.print(choiceTitle+eventName+"SECOND"+spacing1+"[PH]button_title");
+				s+=(choiceTitle+eventName+"SECOND"+spacing1+"[PH]button_title"+"\n");
 			if(choices>2)
-				Driver.print(choiceTitle+eventName+"THIRD"+spacing1+"[PH]button_title");
+				s+=(choiceTitle+eventName+"THIRD"+spacing1+"[PH]button_title"+"\n");
 			if(choices>3)
-				Driver.print(choiceTitle+eventName+"FOURTH"+spacing1+"[PH]button_title");
-			Driver.print(choiceLabel+eventName+"FIRST"+spacing1+"[PH]button_label");
+				s+=(choiceTitle+eventName+"FOURTH"+spacing1+"[PH]button_title"+"\n");
+			//labels
+			s+=(choiceLabel+eventName+"FIRST"+spacing1+"[PH]button_label"+"\n");
 			if(choices>1)
-				Driver.print(choiceLabel+eventName+"SECOND"+spacing1+"[PH]button_label");
+				s+=(choiceLabel+eventName+"SECOND"+spacing1+"[PH]button_label"+"\n");
 			if(choices>2)
-				Driver.print(choiceLabel+eventName+"THIRD"+spacing1+"[PH]button_label");
+				s+=(choiceLabel+eventName+"THIRD"+spacing1+"[PH]button_label"+"\n");
 			if(choices>3)
-				Driver.print(choiceLabel+eventName+"FOURTH"+spacing1+"[PH]button_label");
+				s+=(choiceLabel+eventName+"FOURTH"+spacing1+"[PH]button_label"+"\n");
 			
+			return s;
 		}
-		public void OutputDilemmaTXT(ArrayList<String> eventNames, int choices )
+		public String OutputDilemmaTXT(ArrayList<String> eventNames, int choices )
 		{
+			String s="";
 			for(String event: eventNames)
-				OutputDilemmaTXT(event, choices);
+				s+=OutputDilemmaMainTXT(event, choices);
+			for(String event: eventNames)
+				s+=OutputDilemmaChoiceTXT(event, choices);
+			return s;
 		}
-
+		public void OutputDilemmaTXT(String[] eventNames, int choices ,JTextArea output1, JTextArea output2)
+		{
+			String s="";
+			for(String event: eventNames)
+				s+=OutputDilemmaMainTXT(event, choices);
+			output1.setText(s);
+			s="";
+			for(String event: eventNames)
+				s+=OutputDilemmaChoiceTXT(event, choices);
+			output2.setText(s);
+		}
 		public static eTargetType eTargetType(int selectedIndex) {
 		return eTargetType.values()[selectedIndex];
 		}

@@ -35,14 +35,16 @@ public class GUI implements ActionListener{
 	private JPanel botPanel;
 	
 	//Input
-	JComboBox dropdown;
-	JComboBox targetChoice;
+	JComboBox<String> dropdown;
+	JComboBox<String> targetChoice;
 	JTextField lineChoice;
 	private JPanel centerPanel_input;
 	private JTextArea fieldInput;
 	private JTextArea fieldInput2;
 	JLabel inlabel_left;
 	JLabel inlabel_right;
+	JScrollPane scroll1 ;
+	JScrollPane scroll2 ;
 
 	//Output
 	private JPanel centerPanel_output;
@@ -50,8 +52,20 @@ public class GUI implements ActionListener{
 	private JTextArea fieldOutput2;
 	JLabel outlabel_left;
 	JLabel outlabel_right;
+	JScrollPane scroll3 ;
+	JScrollPane scroll4 ;
 	
+	//finals
+	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text", "Other"};
+	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
+	final String[] TEXTOPTIONS= {"Dilemma", "Incident"};
 	
+	//Vars
+	private int mode=0;
+	private String lastKnownInput_1="";
+	private String lastKnownInput_2="";
+	private String lastKnownInputText_1="";
+	private String lastKnownInputText_2="";
 	public GUI ()
 	{
 		mainFrame = new JFrame("Grid Layout");
@@ -65,12 +79,11 @@ public class GUI implements ActionListener{
 		JButton buttonGenerate= new JButton("Generate");
 		buttonGenerate.addActionListener(this); // Calls actionPerformed() implemented by ActionListener
 		
-		String[] dropDownOptions= {"Dilemma", "Incident"};
-		dropdown = new JComboBox(dropDownOptions);
+		
+		dropdown = new JComboBox<String>(DROPDOWNOPTIONS);
 		dropdown.setSelectedIndex(0);
 		dropdown.addActionListener(this);
-		String[] targetOptions= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
-		targetChoice = new JComboBox(targetOptions);
+		targetChoice = new JComboBox<String>(TARGETOPTIONS);
 		targetChoice.setSelectedIndex(0);
 		targetChoice.addActionListener(this);
 		lineChoice= new JTextField("Optional key addon");
@@ -101,16 +114,14 @@ public class GUI implements ActionListener{
 		fieldOutput= new JTextArea(2,2);
 		fieldInput2= new JTextArea(2,2);
 		fieldOutput2= new JTextArea(2,2);
-		JScrollPane scroll1 = new JScrollPane(fieldInput);
-		JScrollPane scroll2 = new JScrollPane(fieldInput2);
-		JScrollPane scroll3 = new JScrollPane(fieldOutput);
-		JScrollPane scroll4 = new JScrollPane(fieldOutput2);
+		scroll1 = new JScrollPane(fieldInput);
+		scroll2 = new JScrollPane(fieldInput2);
+		scroll3 = new JScrollPane(fieldOutput);
+		scroll4 = new JScrollPane(fieldOutput2);
 		SetScrollBar(scroll1, fieldInput);
 		SetScrollBar(scroll2, fieldInput2);
 		SetScrollBar(scroll3, fieldOutput);
 		SetScrollBar(scroll4, fieldOutput2);
-		//scroll1.getViewport().add(fieldInput);
-		
 
 		//TopPanel
 		topPanel.add(labelDropdown);
@@ -184,8 +195,10 @@ public class GUI implements ActionListener{
 		//System.out.println("Action Event="+a.getActionCommand());
 		if (a.getActionCommand().equals("Generate"))
 			Generate();
+		else if (a.getActionCommand().equals("comboBoxChanged"))
+			SwitchLogic(a.getSource());
 		else
-			Driver.print("Did not generate?");
+			Driver.print("Did not generate..action::"+a.getActionCommand());
 	}
 	private void Generate()
 	{
@@ -196,9 +209,25 @@ public class GUI implements ActionListener{
 		String OptionalText=lineChoice.getText();
 		if (OptionalText.equals("Optional key addon")) // should probably make final
 			OptionalText="";
-		
-		p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),dropdown.getSelectedItem().toString(), OptionalText, fieldOutput, fieldOutput2 );	
-
+		if(mode==0 || mode==1)
+			p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),dropdown.getSelectedItem().toString(), OptionalText, fieldOutput, fieldOutput2 );	
+		else if (mode==2)
+		{
+			if(targetChoice.getSelectedIndex()==0)
+			{
+				int choices=2;
+				if(!lineChoice.getText().equals("Enter # of Choices (dilemma only)"))
+					choices=Integer.parseInt(lineChoice.getText());
+				p.OutputDilemmaTXT(fieldInput.getText().split("\n"),choices, fieldOutput, fieldOutput2 );
+			}
+			else
+			{
+				p.OutputIncidentTXT(fieldInput.getText().split("\n"));
+			}
+			
+		}
+		else
+			Driver.print("not sure");
 	
 	}
 	private void SetScrollBar(JScrollPane scrollBar, JTextArea textBox)
@@ -206,6 +235,115 @@ public class GUI implements ActionListener{
 		scrollBar.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollBar.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollBar.setBounds(textBox.getBounds());
+	}
+	private void SwitchLogic(Object o)
+	{
+		if (o instanceof JComboBox)
+		{
+			@SuppressWarnings("unchecked")
+			JComboBox<String> box= (JComboBox<String>)o;
+			if(box==targetChoice)
+				return;
+			
+			// {"Dilemma", "Incident", "Text", "Other"};
+			// Cant do  DROPDOWNOPTIONS[0] because objects in a final array arent const
+			switch(box.getSelectedItem().toString())
+			{
+			case "Dilemma":
+				ChangeDisplay(0);
+				break;
+			case "Incident":
+				ChangeDisplay(1);
+				break;
+			case "Text":
+				ChangeDisplay(2);
+				break;
+			case "Other":
+				ChangeDisplay(3);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	private void ChangeDisplay(int modeChange)
+	{	int lastMode=mode;
+		mode=modeChange;
+		switch(mode)
+		{
+		case 0:
+			//since i cant seem to have 1 hidden Jtext area behind the other, we will just save the info 
+			if(lastMode==2)
+			{
+				lastKnownInputText_1=fieldInput.getText();
+				lastKnownInputText_2=fieldInput2.getText();
+				fieldInput.setText(lastKnownInput_1);
+				fieldInput2.setText(lastKnownInput_2);
+				fieldInput2.setVisible(true);
+				inlabel_left.setText("New Values");
+				inlabel_right.setText("Lines To Clone");
+				outlabel_left.setText("New Keys");
+				outlabel_right.setText("New Lines");
+				targetChoice.removeAllItems();
+				lineChoice.setText("Optional key addon");
+				fieldOutput.setText("");
+				for(String s : TARGETOPTIONS)
+					targetChoice.addItem(s);
+			}
+			break;
+		case 1:
+			if(lastMode==2)
+			{
+				lastKnownInputText_1=fieldInput.getText();
+				lastKnownInputText_2=fieldInput2.getText();
+				fieldInput.setText(lastKnownInput_1);
+				fieldInput2.setText(lastKnownInput_2);
+				fieldInput2.setVisible(true);
+				inlabel_left.setText("New Values");
+				inlabel_right.setText("Lines To Clone");
+				outlabel_left.setText("New Keys");
+				outlabel_right.setText("New Lines");
+				targetChoice.removeAllItems();
+				fieldOutput.setText("");
+				lineChoice.setText("Optional key addon");
+				for(String s : TARGETOPTIONS)
+					targetChoice.addItem(s);
+			}
+			break;
+		case 2:
+			if(lastMode==0 || lastMode==1)
+			{
+				lastKnownInput_1=fieldInput.getText();
+				lastKnownInput_2=fieldInput2.getText();
+				fieldInput.setText(lastKnownInputText_1);
+				fieldInput2.setText(lastKnownInputText_2);
+				fieldInput2.setVisible(false);
+				inlabel_left.setText("Event Names");
+				inlabel_right.setText("Unused");
+				outlabel_left.setText("Titles/Descriptions");
+				outlabel_right.setText("Choice Labels");
+				targetChoice.removeAllItems();
+				fieldOutput.setText("");
+				lineChoice.setText("Enter # of Choices (dilemma only)");
+				for(String s : TEXTOPTIONS)
+					targetChoice.addItem(s);
+			}
+			break;
+		case 3:
+			/*fieldInput.setVisible(false);
+			fieldInput2.setVisible(false);
+			scroll1.setVisible(false);
+			scroll2.setVisible(false);
+			scroll1_text.setVisible(true);
+			scroll2_text.setVisible(true);
+			fieldInput_text.setVisible(true);
+			fieldInput2_text.setVisible(true);*/
+			break;
+		default:
+			break;
+				
+		}
+		
 	}
 	private void SetGrabBagColumn(JLabel grabBagInput, Component scrollBar, int row, int col, Insets inset)
 	{

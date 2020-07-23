@@ -47,7 +47,7 @@ public class Driver {
 		p.OutputClonedEventLines(FileDIR+"dilemma_payload.txt", eventKeys);
 		p.OutputClonedEventLines(FileDIR+"dilemma_options.txt", eventKeys);
 		
-		p.OutputDilemmaTXT("3k_lua_yuanshe_helps_lubi_dilemma",3);
+		//p.OutputDilemmaTXT("3k_lua_yuanshe_helps_lubi_dilemma",3);
 	}
 
 
