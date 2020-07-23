@@ -3,10 +3,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.MenuBar;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -14,17 +16,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 public class GUI implements ActionListener{
 
@@ -33,6 +43,7 @@ public class GUI implements ActionListener{
 	private JPanel topPanel;
 	private JPanel centerPanel;
 	private JPanel botPanel;
+	
 
 	//Input
 	//NEW 
@@ -115,6 +126,29 @@ public class GUI implements ActionListener{
 		centerPanel_input= new JPanel();
 		centerPanel_output= new JPanel();
 		botPanel= new JPanel();
+		
+		JMenuBar menuBar= new JMenuBar();
+		JMenu about = new JMenu("Menu");
+		about.addMenuListener(new MenuListener()
+				{ //These all seems quite useless atm
+					@Override
+					public void menuCanceled(MenuEvent arg0) {}
+					@Override
+					public void menuDeselected(MenuEvent arg0) {	}
+					@Override
+					public void menuSelected(MenuEvent arg0) {	}
+				});
+		JMenuItem aboutOp= new JMenuItem("About");
+		aboutOp.addActionListener(this);
+		about.add(aboutOp);
+		JMenuItem HelpOp1= new JMenuItem("Help-New");
+		HelpOp1.addActionListener(this);
+		about.add(HelpOp1);
+		JMenuItem HelpOp2= new JMenuItem("Help-Clone");
+		HelpOp2.addActionListener(this);
+		about.add(HelpOp2);
+		menuBar.add(about);
+		
 		boxes= new ArrayList<JTextField>();
 		JButton buttonGenerate= new JButton("Generate");
 		buttonGenerate.addActionListener(this); // Calls actionPerformed() implemented by ActionListener
@@ -136,10 +170,24 @@ public class GUI implements ActionListener{
 		modeChoiceDropdown.setRenderer(renderer);
 
 		//TopPanel
-		topPanel.add(modeLabelDropdown);
-		topPanel.add(modeDropdown);
-		topPanel.add(modeChoiceLabelDropdown);
-		topPanel.add(modeChoiceDropdown);
+		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
+		topPanel.add(menuBar);
+		//YESS INSERT DUMMY SPACING!
+		topPanel.add(Box.createRigidArea(new Dimension(400, 0)));
+		JPanel centered= new JPanel();
+		centered.setLayout(new GridBagLayout());
+		//SetGrabBagColumn( topPanel,  menuBar, 0, 0,  new Insets(1,0,1,100), GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( centered,  modeLabelDropdown, 0, 1,  new Insets(1,20,1,1), GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( centered,  modeDropdown, 0, 2,  new Insets(1,1,1,1), GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( centered,  modeChoiceLabelDropdown, 0, 3,  new Insets(1,10,1,1), GridBagConstraints.RELATIVE);
+		SetGrabBagColumn( centered,  modeChoiceDropdown, 0, 4,  new Insets(1,1,1,10), GridBagConstraints.RELATIVE);
+		topPanel.add(centered);
+		//topPanel.add(modeLabelDropdown);
+		//topPanel.add(modeDropdown);
+		//topPanel.add(modeChoiceLabelDropdown);
+		//topPanel.add(modeChoiceDropdown);
+		
+		
 		//Center Main 
 		centerPanel.setLayout(new GridLayout(2,1, 5, 10) );
 
@@ -430,6 +478,13 @@ public class GUI implements ActionListener{
 			Generate();
 		else if (a.getActionCommand().equals("comboBoxChanged"))
 			SwitchLogic(a.getSource());
+		else if (a.getActionCommand().equals("About"))
+			JOptionPane.showMessageDialog(mainFrame, "About: TK Creator \nThis Program was created by Havie (July/2020)\nThis tool helps improve the speed of event generation modding in Total War Three Kingdoms");
+		else if (a.getActionCommand().equals("Help-New"))
+			JOptionPane.showMessageDialog(mainFrame, "Help-New: \nRequired Inputs: Event_key, Starting index, Faction1\nEvent will always make the player the target for Faction1. If left as default player can be any faction, or you can specify. Any fields left as 'unused' will not generate");
+		else if (a.getActionCommand().equals("Help-Clone"))
+			JOptionPane.showMessageDialog(mainFrame, "Help-Clone: \nValues Input under 'New Values' will replace the specified target correlated with the chosen dropdown.\nEvent names will be auto generated based on key used in 'Lines to Clone', 'New Values', and 'Type'\n'Optional key addon' will follow the event key prefix  ");
+
 		else
 			Driver.print("Did not generate..action::"+a.getActionCommand());
 	}
@@ -720,7 +775,7 @@ public class GUI implements ActionListener{
 	{
 		SetGrabBagColumn( pane,  component, row,  col,  inset, 1);
 	}
-	private void SetGrabBagColumn(JLabel pane, Component component, int row, int col, Insets inset, float weight)
+	private void SetGrabBagColumn(JComponent pane, Component component, int row, int col, Insets inset, float weight)
 	{
 		GridBagConstraints c = new GridBagConstraints();   
 		//c.anchor = GridBagConstraints.WEST;
