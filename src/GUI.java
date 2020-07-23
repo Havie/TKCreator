@@ -48,6 +48,9 @@ public class GUI implements ActionListener{
 	JLabel inLabelRegion2;
 	JLabel inLabelRegion3;
 	
+	//JLabel inLabelPayload1;
+	//JLabel inLabelPayload2;
+	
 	JTextField inEventKey;
 	JTextField inStartingIndex;
 	JTextField inChar1;
@@ -59,6 +62,9 @@ public class GUI implements ActionListener{
 	JTextField inRegion1;
 	JTextField inRegion2;
 	JTextField inRegion3;
+	
+	//JTextField inPayLoad1;
+	//JTextField inPayLoad2;
 	//CLONE
 	ComboBoxRenderer renderer;
 	JLabel modeLabelDropdown;
@@ -86,11 +92,11 @@ public class GUI implements ActionListener{
 
 	//finals
 	final String[] MODEOPTIONS= {"NEW", "CLONE"};
-	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text", "Other"};
+	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text"};
 	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
 	final String[] TEXTOPTIONS= {"Dilemma", "Incident"};
-	final Color[] VALID = {Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK};
-	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED, Color.BLACK};
+	final Color[] VALID = {Color.BLACK, Color.BLACK, Color.BLACK};
+	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED};
 
 	//Vars
 	private int modeChoice=0;
@@ -217,6 +223,8 @@ public class GUI implements ActionListener{
 		//Output Changes 
 		outlabel_left.setText("New Keys");
 		outlabel_right.setText("New Lines");
+		outlabel_right.setForeground(Color.WHITE);
+		fieldOutput2.setVisible(true);
 		
 		//Input Creation
 		JLabel label_input = new JLabel("Input");
@@ -270,7 +278,9 @@ public class GUI implements ActionListener{
 		
 		//Output Changes
 		outlabel_left.setText("New Options");
-		outlabel_right.setText("New Payloads");
+		outlabel_right.setText("Better Off Cloning");
+		outlabel_right.setForeground(Color.RED);
+		fieldOutput2.setVisible(false);
 		
 		inLabelEventKey = new JLabel("Event Key");
 		inLabelStartingIndex = new JLabel("Starting Index");
@@ -305,9 +315,14 @@ public class GUI implements ActionListener{
 		inLabelRegion2.setHorizontalAlignment(SwingConstants.CENTER);
 		inLabelRegion3.setForeground(Color.white);
 		inLabelRegion3.setHorizontalAlignment(SwingConstants.CENTER);
+		//inLabelPayload1 = new JLabel("Payload 1:");
+		//inLabelPayload1.setForeground(Color.white);
+		//inLabelPayload1.setHorizontalAlignment(SwingConstants.CENTER);
+		//inLabelPayload2 = new JLabel("Payload 2:");
+		//inLabelPayload2.setForeground(Color.white);
+		//inLabelPayload2.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		inEventKey =new JTextField("key_name");
-		//inEventKey.setPreferredSize(new Dimension(1000,1000));
 		inStartingIndex=new JTextField("0");
 		inChar1= new JTextField("unused",300);
 		inChar2= new JTextField("unused",300);
@@ -318,6 +333,8 @@ public class GUI implements ActionListener{
 		inRegion1= new JTextField("unused",300);
 		inRegion2= new JTextField("unused",300);
 		inRegion3= new JTextField("unused",300);
+		//inPayLoad1= new JTextField("unused",300);
+		//inPayLoad2= new JTextField("unused",300);
 		boxes.add(inEventKey);
 		boxes.add(inStartingIndex);
 		boxes.add(inChar1);
@@ -329,6 +346,8 @@ public class GUI implements ActionListener{
 		boxes.add(inRegion1);
 		boxes.add(inRegion2);
 		boxes.add(inRegion3);
+		//boxes.add(inPayLoad1);
+		//boxes.add(inPayLoad2);
 
 		//Input
 		centerPanel_input.setLayout(new BorderLayout() );
@@ -336,6 +355,8 @@ public class GUI implements ActionListener{
 		JLabel grabBagInput= new JLabel();
 		grabBagInput.setLayout(new GridBagLayout());
 		centerPanel_input.add(grabBagInput, BorderLayout.CENTER);
+		
+		
 		int i=0;
 		SetGrabBagColumn( grabBagInput,  inlabel_left, i, 0,  new Insets(1,1,1,1), GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( grabBagInput,  inlabel_right, i, 1, new Insets(1,1,1,1),GridBagConstraints.RELATIVE);
@@ -361,6 +382,12 @@ public class GUI implements ActionListener{
 		SetGrabBagColumn( grabBagInput,  inRegion2, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( grabBagInput,  inLabelRegion3, ++i, 0, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( grabBagInput,  inRegion3, i, 1, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		
+		//SetGrabBagColumn( grabBagInput,  inLabelPayload1, 1, 3, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		//SetGrabBagColumn( grabBagInput,  inPayLoad1, 1, 4, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		//SetGrabBagColumn( grabBagInput,  inLabelPayload2, 2, 3, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+		//SetGrabBagColumn( grabBagInput,  inPayLoad2, 2, 4, new Insets(1,10,1,10),GridBagConstraints.RELATIVE);
+
 		ReDrawWindow();
 	}
 	private void ClearCenter()
