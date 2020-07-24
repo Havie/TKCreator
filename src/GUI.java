@@ -19,6 +19,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -91,6 +92,7 @@ public class GUI implements ActionListener{
 	JLabel inlabel_right;
 	JScrollPane scroll1 ;
 	JScrollPane scroll2 ;
+	JCheckBox eventKeyOverride;
 
 	//Output
 	private JPanel centerPanel_output;
@@ -284,6 +286,8 @@ public class GUI implements ActionListener{
 		inlabel_right = new JLabel("Lines To Clone");
 		inlabel_right.setForeground(Color.white);
 		inlabel_right.setHorizontalAlignment(SwingConstants.CENTER);
+		eventKeyOverride= new JCheckBox("Insert");
+		eventKeyOverride.addActionListener(this);
 
 
 		fieldInput= new JTextArea(2,2);
@@ -306,7 +310,17 @@ public class GUI implements ActionListener{
 		SetGrabBagColumn( grabBagInput,  scroll1, 1, 0, new Insets(1,10,1,10));
 		SetGrabBagColumn( grabBagInput,  scroll2, 1, 1, new Insets(1,10,1,10));
 		SetGrabBagColumn( grabBagInput,  targetChoice, 2, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
+		JPanel override= new JPanel();
+		override.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
+		JLabel overrideDesc= new JLabel("Key manipulation options:");
+		override.add(overrideDesc);
+		override.add(Box.createRigidArea(new Dimension(30, 0)));
+		override.add(lineChoice);
+		override.add(Box.createRigidArea(new Dimension(5, 0)));
+		override.add(eventKeyOverride);
+		//SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
+		//SetGrabBagColumn( grabBagInput,  eventKeyOverride, 3, 1, new Insets(1,10,1,10));
+		SetGrabBagColumn( grabBagInput,  override, 2, 1, new Insets(1,10,1,10));
 
 		ReDrawWindow();
 	}
@@ -484,7 +498,10 @@ public class GUI implements ActionListener{
 			JOptionPane.showMessageDialog(mainFrame, "Help-New: \nRequired Inputs: Event_key, Starting index, Faction1\nEvent will always make the player the target for Faction1. If left as default player can be any faction, or you can specify. Any fields left as 'unused' will not generate");
 		else if (a.getActionCommand().equals("Help-Clone"))
 			JOptionPane.showMessageDialog(mainFrame, "Help-Clone: \nValues Input under 'New Values' will replace the specified target correlated with the chosen dropdown.\nEvent names will be auto generated based on key used in 'Lines to Clone', 'New Values', and 'Type'\n'Optional key addon' will follow the event key prefix  ");
-
+		else if (a.getActionCommand().equals("Insert"))
+			eventKeyOverride.setText("Override");
+		else if (a.getActionCommand().equals("Override"))
+			eventKeyOverride.setText("Insert");
 		else
 			Driver.print("Did not generate..action::"+a.getActionCommand());
 	}
@@ -500,7 +517,7 @@ public class GUI implements ActionListener{
 		if( modeDropdown.getSelectedIndex()==1) //CLONED
 		{
 			if(modeChoice==0 || modeChoice==1)
-				p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),modeChoiceDropdown.getSelectedItem().toString(), OptionalText, fieldOutput, fieldOutput2 );	
+				p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),modeChoiceDropdown.getSelectedItem().toString(), OptionalText,eventKeyOverride.isSelected(), fieldOutput, fieldOutput2 );	
 			else if (modeChoice==2)
 			{
 				if(targetChoice.getSelectedIndex()==0)
@@ -572,7 +589,7 @@ public class GUI implements ActionListener{
 		switch(type)
 		{
 		case 1:
-			return s.contains("template_historical");
+			return s.contains("template_historical")&&(s.contains("_hero_"));
 		case 2:
 			return s.contains("main_faction") || s.equals("default");
 		case 3:
