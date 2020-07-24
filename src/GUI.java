@@ -111,7 +111,7 @@ public class GUI implements ActionListener{
 	//finals
 	final String[] MODEOPTIONS= {"NEW", "CLONE"};
 	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text"};
-	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
+	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2","Nothing"};
 	final String[] TEXTOPTIONS= {"Dilemma", "Incident"};
 	final Color[] VALID = {Color.BLACK, Color.BLACK, Color.BLACK};
 	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED};
@@ -445,7 +445,7 @@ public class GUI implements ActionListener{
 		
 		//Output Changes
 		outlabel_left.setText("New Options");
-		outlabel_right.setText("Better Off Cloning");
+		outlabel_right.setText("Better Off Cloning Payloads");
 		outlabel_right.setForeground(Color.RED);
 		fieldOutput2.setVisible(false);
 		
@@ -602,9 +602,9 @@ public class GUI implements ActionListener{
 		else if (a.getActionCommand().equals("Help-New"))
 			JOptionPane.showMessageDialog(mainFrame, "Help-New: \nRequired Inputs: 'Event Key', 'Starting Index', 'Faction 1' \nEvent will always make the player the target for Faction1. \nIf left as default player can be any faction.\nAny fields left as 'unused' will not generate");
 		else if (a.getActionCommand().equals("Help-Clone"))
-			JOptionPane.showMessageDialog(mainFrame, "Help-Clone: \nValues Input under 'New Values' will replace the specified target correlated with the chosen dropdown.\nEvent names will be auto generated based on key used in 'Lines to Clone', 'New Values', and 'Type'\n'Optional key addon' will follow the event key prefix  ");
+			JOptionPane.showMessageDialog(mainFrame, "Help-Clone: \nValues Input under 'New Values' will replace the specified target in the chosen dropdown.\nEvent names will be auto generated based on key used in 'Lines to Clone', 'New Values', and 'Type'\n'Optional key addon' \n   Insert: will follow the event key prefix \n   Override: will completely replace the auto generated key but still append the event type ");
 		else if (a.getActionCommand().equals("Help-Text"))
-			JOptionPane.showMessageDialog(mainFrame, "Help-Text: \nCurrently Only new Text can be generated,You can essentially clone anything, but inputting multiple Event Names followed by a line break.\nYou have the option to chose between dilemma or incident, and fill in the text for Titles and Descriptions\nChanging the text for dilemma choice labels not supported.  ");
+			JOptionPane.showMessageDialog(mainFrame, "Help-Text: \nCurrently only new Text can be generated but you can essentially clone anything by inputting multiple entries into 'Event Names' followed by a line break.\nYou have the option to chose between dilemma or incident, and fill in the text for 'Titles' and 'Descriptions'\nChanging the text for dilemma choice labels not supported, but maybe soon ");
 		else if (a.getActionCommand().equals("Help-Example"))
 			JOptionPane.showMessageDialog(null, new MessageWithLink("Examples on how to use can be found\n :\n  <a href=\"http://www.google.com\">\nHere</a>"));
 		else if (a.getActionCommand().equals("Known-Issues"))

@@ -23,7 +23,7 @@ public class Parser {
 	private String outputPath="C:\\Users\\TKout.txt";
 	private String programName="ignore";
 
-	public enum eTargetType {Target_Region_1, Target_Region_2, Target_Character_1, Target_Character_2, Target_Faction_1,Target_Faction_2};
+	public enum eTargetType {Target_Region_1, Target_Region_2, Target_Character_1, Target_Character_2, Target_Faction_1,Target_Faction_2, NONE};
 
 	public Parser()
 	{
@@ -379,7 +379,7 @@ public class Parser {
 		String spacing4= "	"; 
 		int index= startingIndex;
 		String s="";
-		Driver.print("CALLED HERE:"+eventKey+spacing2+"VAR_CHANCE");
+		
 		s+=((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default"+"\n");
 		s+=((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1"+"\n");
 		//Ini the vars for factions 
@@ -531,7 +531,7 @@ public class Parser {
 	}
 	private String DecideTargetKey(eTargetType target)
 	{
-		String s = null;
+		String s = "NONE";
 		if(target==eTargetType.Target_Character_1 || target==eTargetType.Target_Character_2)
 			s="GEN_CND_CHARACTER_TEMPLATE";
 		else if(target==eTargetType.Target_Faction_1 || target==eTargetType.Target_Faction_2)
@@ -542,7 +542,7 @@ public class Parser {
 	}
 	private String DecideTargetIndex(eTargetType target)
 	{
-		String s = null;
+		String s = "NONE";
 		if(target==eTargetType.Target_Character_1)
 			s="target_character_1";
 		else if(target==eTargetType.Target_Character_2)
@@ -559,7 +559,7 @@ public class Parser {
 	}
 	public void OutputClonedEventLinesRaw(String Input, String eventKeys, eTargetType target, String type, String OptionalText, boolean overrideKey, JTextArea output1, JTextArea output2) 
 	{
-		//Driver.print("OutputClonedEventLinesRaw");
+		Driver.print("OutputClonedEventLinesRaw");
 		int startingIndex=0;
 		String spacing1="	";
 		String initialEvent="";
@@ -571,10 +571,18 @@ public class Parser {
 		String targetKey = DecideTargetKey(target);
 		String targetIndex= DecideTargetIndex(target);
 
-		//Driver.print("linesIN="+linesIn.length);
-		//Driver.print("eventKeys1="+eventKeys1.length);
-		//Driver.print("targetKey"+targetKey);
-		//Driver.print("targetIndex"+targetIndex);
+		if(targetKey=="NONE")
+		{
+			if(!overrideKey)
+			{
+				Driver.print("Do nothing");
+				eventKeys1=new String[1];
+				eventKeys1[0]="custom";
+			}
+			else
+				eventKeys1[0]="custom";
+		}
+
 		String newKeys="";
 		String finalReturn="";
 
@@ -618,7 +626,7 @@ public class Parser {
 					//"3k_dlc05_template_historical_lu_bu_hero_fire" --> "lu_bu" 
 					String id="_template_historical_";
 					int index= keys.indexOf(id);
-					if (index==-1){output1.setText("InvalidEntry for Character, needs _template_historical");return;}
+					if (index==-1){output1.setText("InvalidEntry for Character, needs _template_historical heard"+keys);return;}
 					else 
 					{
 						if (keys.indexOf("_hero")==-1){output1.setText("InvalidEntry for Character, needs _hero");return;}
@@ -627,7 +635,7 @@ public class Parser {
 				}
 				else
 				{
-					ReplacementKey= "TODO";
+					ReplacementKey= "custom";
 				}
 			}
 
