@@ -1,3 +1,4 @@
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -33,6 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
@@ -94,6 +96,8 @@ public class GUI implements ActionListener{
 	JScrollPane scroll2 ;
 	JCheckBox eventKeyOverride;
 	JPanel overrideOptionsPanel;
+	JTextField op1_text ;
+	JTextField op2_text ;
 
 	//Output
 	private JPanel centerPanel_output;
@@ -124,6 +128,7 @@ public class GUI implements ActionListener{
 	{
 		mainFrame = new JFrame("Grid Layout");
 		mainPanel= new JPanel();
+		mainPanel.setBackground(Color.LIGHT_GRAY);
 		topPanel= new JPanel();
 		centerPanel= new JPanel();
 		centerPanel_input= new JPanel();
@@ -150,8 +155,17 @@ public class GUI implements ActionListener{
 		JMenuItem HelpOp2= new JMenuItem("Help-Clone");
 		HelpOp2.addActionListener(this);
 		about.add(HelpOp2);
+		JMenuItem HelpOp3= new JMenuItem("Help-Text");
+		HelpOp3.addActionListener(this);
+		about.add(HelpOp3);
+		JMenuItem HelpOp4= new JMenuItem("Help-Example");
+		HelpOp4.addActionListener(this);
+		about.add(HelpOp4);
+		JMenuItem HelpOp5= new JMenuItem("Known-Issues");
+		HelpOp5.addActionListener(this);
+		about.add(HelpOp5);
 		menuBar.add(about);
-		
+	
 		boxes= new ArrayList<JTextField>();
 		JButton buttonGenerate= new JButton("Generate");
 		buttonGenerate.addActionListener(this); // Calls actionPerformed() implemented by ActionListener
@@ -173,24 +187,39 @@ public class GUI implements ActionListener{
 		modeChoiceDropdown.setRenderer(renderer);
 
 		//TopPanel
-		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
-		topPanel.add(menuBar);
+		topPanel.setLayout(new GridLayout());
+		JPanel menuToolPanel= new JPanel();
+		menuToolPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
+		JPanel menuOptionsPanel= new JPanel();
+		menuOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 1, 0));
+		
+		
+		menuToolPanel.add(menuBar);
+		
+		//topPanel.add(menuBar);
 		//YESS INSERT DUMMY SPACING!
-		topPanel.add(Box.createRigidArea(new Dimension(400, 0)));
+		//topPanel.add(Box.createRigidArea(new Dimension(400, 0)));
 		JPanel centered= new JPanel();
 		centered.setLayout(new GridBagLayout());
-		//SetGrabBagColumn( topPanel,  menuBar, 0, 0,  new Insets(1,0,1,100), GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( centered,  modeLabelDropdown, 0, 1,  new Insets(1,20,1,1), GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( centered,  modeDropdown, 0, 2,  new Insets(1,1,1,1), GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( centered,  modeChoiceLabelDropdown, 0, 3,  new Insets(1,10,1,1), GridBagConstraints.RELATIVE);
 		SetGrabBagColumn( centered,  modeChoiceDropdown, 0, 4,  new Insets(1,1,1,10), GridBagConstraints.RELATIVE);
-		topPanel.add(centered);
+		menuOptionsPanel.add(centered);
+		topPanel.add(menuToolPanel);
+		topPanel.add(menuOptionsPanel);
+		//topPanel.add(centered);
 		//topPanel.add(modeLabelDropdown);
 		//topPanel.add(modeDropdown);
 		//topPanel.add(modeChoiceLabelDropdown);
 		//topPanel.add(modeChoiceDropdown);
-		
-		
+		//menuToolPanel.setBackground(Color.DARK_GRAY);
+		//menuOptionsPanel.setBackground(Color.DARK_GRAY);
+		//centered.setBackground(Color.DARK_GRAY);
+		topPanel.setBorder(BorderFactory.createRaisedBevelBorder());
+		//topPanel.setBorder(BorderFactory.createMatteBorder(5,5,5,5, new Color(105, 105, 105)));
+		//menuOptionsPanel.setBorder(BorderFactory.createRaisedBevelBorder());
+		//centered.setBorder(BorderFactory.createRaisedBevelBorder());
 		//Center Main 
 		centerPanel.setLayout(new GridLayout(2,1, 5, 10) );
 
@@ -229,12 +258,13 @@ public class GUI implements ActionListener{
 		centerPanel.add(centerPanel_output);
 		centerPanel_input.setBackground(Color.DARK_GRAY);
 		centerPanel_output.setBackground(Color.DARK_GRAY);
+		botPanel.setBackground(Color.DARK_GRAY);
 		botPanel.add(buttonGenerate);
 
 		//topPanel.setBorder(BorderFactory.createEmptyBorder(30,30,10,30));
 		//topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
-		mainPanel.setBorder(BorderFactory.createEmptyBorder(30,30,10,30));
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
 		//mainPanel.setLayout(new GridLayout(3,1, 5, 10) );
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
@@ -287,10 +317,8 @@ public class GUI implements ActionListener{
 		JLabel label_input = new JLabel();
 		SetLabel(label_input, "Input", Color.WHITE);
 
-		
 		if (notText)
 		{
-
 			
 			//Input Changes 
 			targetChoice = new JComboBox<String>(TARGETOPTIONS);
@@ -310,9 +338,6 @@ public class GUI implements ActionListener{
 			outlabel_right.setText("New Lines");
 			outlabel_right.setForeground(Color.WHITE);
 			fieldOutput2.setVisible(true);
-			
-
-
 			
 			//Create Layout
 			centerPanel_input.setLayout(new BorderLayout() );
@@ -337,15 +362,12 @@ public class GUI implements ActionListener{
 			//SetGrabBagColumn( grabBagInput,  eventKeyOverride, 3, 1, new Insets(1,10,1,10));
 			SetGrabBagColumn( grabBagInput,  overrideOptionsPanel, 2, 1, new Insets(1,10,1,10));
 			
+			fieldInput.setText(lastKnownInput_1);
+			fieldInput2.setText(lastKnownInput_2);
+			
 		}
 		else
 		{
-
-			lastKnownInput_1=fieldInput.getText();
-			lastKnownInput_2=fieldInput2.getText();
-			fieldInput.setText(lastKnownInputText_1);
-			
-			
 			//InputChanges
 			targetChoice = new JComboBox<String>(TEXTOPTIONS);
 			targetChoice.setSelectedIndex(0);
@@ -359,9 +381,9 @@ public class GUI implements ActionListener{
 			//Add new choices here 
 			JLabel op0= new JLabel("Event Type :");
 			JLabel op1= new JLabel("Title Text :");
-			JTextField op1_text = new JTextField("[PH]Title");
+			op1_text = new JTextField("[PH]Title");
 			JLabel op2= new JLabel("DESC Text :");
-			JTextField op2_text = new JTextField("[PH]Desc");
+			op2_text = new JTextField("[PH]Desc");
 			JLabel op3= new JLabel("Enter # of Choices (dilemma only)");
 			SetGrabBagColumn( TextOptionsDiv,  op0, 0, 0, new Insets(1,1,10,1));
 			SetGrabBagColumn( TextOptionsDiv,  targetChoice, 0, 1, new Insets(1,1,10,1));
@@ -378,6 +400,7 @@ public class GUI implements ActionListener{
 			SetLabel(outlabel_right,"Choice Labels", Color.WHITE );
 			fieldOutput.setText("");
 			fieldOutput2.setText("");
+			fieldOutput2.setVisible(true);
 
 			
 			
@@ -391,10 +414,11 @@ public class GUI implements ActionListener{
 			SetGrabBagColumn( grabBagInput,  inlabel_right, 0, 1, new Insets(1,1,1,1));
 			SetGrabBagColumn( grabBagInput,  scroll1, 1, 0, new Insets(1,10,1,10));
 			SetGrabBagColumn( grabBagInput,  TextOptionsDiv, 1, 1, new Insets(1,10,1,10));
-			
-			//SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
-			//SetGrabBagColumn( grabBagInput,  eventKeyOverride, 3, 1, new Insets(1,10,1,10));
 
+			fieldInput.setText(lastKnownInputText_1);
+			fieldInput2.setText(lastKnownInputText_2);
+			Driver.print("TEXT1:"+lastKnownInputText_1);
+			Driver.print("TEXT2:"+lastKnownInputText_2);
 		}
 
 		ReDrawWindow();
@@ -465,7 +489,7 @@ public class GUI implements ActionListener{
 		//inLabelPayload2.setForeground(Color.white);
 		//inLabelPayload2.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		inEventKey =new JTextField("key_name");
+		inEventKey =new JTextField("3k_custom_key");
 		inStartingIndex=new JTextField("0");
 		inChar1= new JTextField("unused",300);
 		inChar2= new JTextField("unused",300);
@@ -576,15 +600,22 @@ public class GUI implements ActionListener{
 		else if (a.getActionCommand().equals("About"))
 			JOptionPane.showMessageDialog(mainFrame, "About: TK Creator \nThis Program was created by Havie (July/2020)\nThis tool helps improve the speed of event generation modding in Total War Three Kingdoms");
 		else if (a.getActionCommand().equals("Help-New"))
-			JOptionPane.showMessageDialog(mainFrame, "Help-New: \nRequired Inputs: Event_key, Starting index, Faction1\nEvent will always make the player the target for Faction1. If left as default player can be any faction, or you can specify. Any fields left as 'unused' will not generate");
+			JOptionPane.showMessageDialog(mainFrame, "Help-New: \nRequired Inputs: 'Event Key', 'Starting Index', 'Faction 1' \nEvent will always make the player the target for Faction1. \nIf left as default player can be any faction.\nAny fields left as 'unused' will not generate");
 		else if (a.getActionCommand().equals("Help-Clone"))
 			JOptionPane.showMessageDialog(mainFrame, "Help-Clone: \nValues Input under 'New Values' will replace the specified target correlated with the chosen dropdown.\nEvent names will be auto generated based on key used in 'Lines to Clone', 'New Values', and 'Type'\n'Optional key addon' will follow the event key prefix  ");
+		else if (a.getActionCommand().equals("Help-Text"))
+			JOptionPane.showMessageDialog(mainFrame, "Help-Text: \nCurrently Only new Text can be generated,You can essentially clone anything, but inputting multiple Event Names followed by a line break.\nYou have the option to chose between dilemma or incident, and fill in the text for Titles and Descriptions\nChanging the text for dilemma choice labels not supported.  ");
+		else if (a.getActionCommand().equals("Help-Example"))
+			JOptionPane.showMessageDialog(null, new MessageWithLink("Examples on how to use can be found\n :\n  <a href=\"http://www.google.com\">\nHere</a>"));
+		else if (a.getActionCommand().equals("Known-Issues"))
+			JOptionPane.showMessageDialog(mainFrame, "Known-Issues: \nThe spacing in the output boxes can get distorted for an unknown reason, however\nPasting the text into RPFM/Notepad++ keeps the intended formatting.  ");
 		else if (a.getActionCommand().equals("Insert"))
 			eventKeyOverride.setText("Override");
 		else if (a.getActionCommand().equals("Override"))
 			eventKeyOverride.setText("Insert");
 		else
 			Driver.print("Did not generate..action::"+a.getActionCommand());
+		//Known-Issues
 	}
 	private void Generate()
 	{
@@ -595,7 +626,9 @@ public class GUI implements ActionListener{
 		String OptionalText=lineChoice.getText();
 		if (OptionalText.equals("Optional key addon")) // should probably make final
 			OptionalText="";
-		if( modeDropdown.getSelectedIndex()==1) //CLONED
+		//Driver.print("MODE to generate="+modeDropdown.getSelectedIndex() + "    ModeChoice="+modeChoice);
+		
+		if( modeDropdown.getSelectedIndex()==1 ||  (modeDropdown.getSelectedIndex()==0 && modeChoice==2 )) //CLONED
 		{
 			if(modeChoice==0 || modeChoice==1)
 				p.OutputClonedEventLinesRaw(fieldInput2.getText(), fieldInput.getText(), Parser.eTargetType(targetChoice.getSelectedIndex()),modeChoiceDropdown.getSelectedItem().toString(), OptionalText,eventKeyOverride.isSelected(), fieldOutput, fieldOutput2 );	
@@ -609,31 +642,19 @@ public class GUI implements ActionListener{
 						try{choices=Integer.parseInt(lineChoice.getText());}
 						catch(NumberFormatException e){choices=2;}
 					}
-					p.OutputDilemmaTXT(fieldInput.getText().split("\n"),choices, fieldOutput, fieldOutput2 );
+					p.OutputDilemmaTXT(fieldInput.getText().split("\n"),choices, fieldOutput, fieldOutput2, op1_text.getText(), op2_text.getText() );
 				}
 				else
 				{
-					p.OutputIncidentTXT(fieldInput.getText().split("\n"),fieldOutput, fieldOutput2 );
+					p.OutputIncidentTXT(fieldInput.getText().split("\n"),fieldOutput, fieldOutput2, op1_text.getText(), op2_text.getText() );
 				}
 	
 			}
 			else
 				Driver.print("not sure");
 		}
-		else // New ==0 (written reversed order at development time)
+		else //NEW if ( modeDropdown.getSelectedIndex()==0 ) (written reversed order at development time)
 		{
-			/*
-			 * JTextField inChar1;
-				JTextField inChar2;
-				JTextField inChar3;
-				JTextField inFaction1;
-				JTextField inFaction2;
-				JTextField inFaction3;
-				JTextField inRegion1;
-				JTextField inRegion2;
-				JTextField inRegion3;
-			 */
-			
 			//Build an Array out of the types
 			ArrayList<String> targetCharacters= new ArrayList<String>();
 			ArrayList<String> targetFactions= new ArrayList<String>();
@@ -715,11 +736,13 @@ public class GUI implements ActionListener{
 					{
 					case 0: //dilemma 
 						//Driver.print("IS THIS HAPPEING? (1)");
+						//SetUpCloned(true);
 						outlabel_left.setText("Titles/Descriptions");
 						outlabel_right.setText("Choice Labels");
 						break;
 					case 1: //incident
 						//Driver.print("IS THIS HAPPEING? (2)");
+						//SetUpCloned(true);
 						outlabel_left.setText("Titles");
 						outlabel_right.setText("Descriptions");
 						break;
@@ -771,11 +794,12 @@ public class GUI implements ActionListener{
 					}
 				else if (modeDropdown.getSelectedIndex() == 1) //CLONED
 				{
-					
-					setDropdownRender(false);
 					lastKnownInputText_1=fieldInput.getText();
 					lastKnownInputText_2=fieldInput2.getText();
-					fieldInput.setText(lastKnownInput_1);
+					
+					SetUpCloned(true);
+					setDropdownRender(false);
+					/*fieldInput.setText(lastKnownInput_1);
 					fieldInput2.setText(lastKnownInput_2);
 					fieldInput2.setVisible(true);
 					inlabel_left.setText("New Values");
@@ -789,7 +813,7 @@ public class GUI implements ActionListener{
 					fieldOutput2.setText("");
 					//Driver.print("(1)DID THIS TRIGGER ACTION?");
 					for(String s : TARGETOPTIONS)
-						targetChoice.addItem(s);
+						targetChoice.addItem(s);*/
 					
 
 				}
@@ -803,24 +827,11 @@ public class GUI implements ActionListener{
 					SetUpNew();
 				else if (modeDropdown.getSelectedIndex() == 1) //CLONED
 				{
-					setDropdownRender(false);
 					lastKnownInputText_1=fieldInput.getText();
 					lastKnownInputText_2=fieldInput2.getText();
-					fieldInput.setText(lastKnownInput_1);
-					fieldInput2.setText(lastKnownInput_2);
-					fieldInput2.setVisible(true);
-					inlabel_left.setText("New Values");
-					inlabel_right.setText("Lines To Clone");
-					outlabel_left.setText("New Keys");
-					outlabel_right.setText("New Lines");
-					targetChoice.removeAllItems();
-					fieldOutput.setText("");
-					fieldOutput2.setText("");
-					lineChoice.setText("Optional key addon");
-					Driver.print("(2)DID THIS TRIGGER ACTION?");
-					for(String s : TARGETOPTIONS)
-						targetChoice.addItem(s);
-
+					SetUpCloned(true);
+					setDropdownRender(false);
+					
 				}
 			}
 			break;
@@ -831,6 +842,8 @@ public class GUI implements ActionListener{
 			else
 				setDropdownRender(false);
 			
+			lastKnownInput_1=fieldInput.getText();
+			lastKnownInput_2=fieldInput2.getText();
 			SetUpCloned(false);
 			/*lastKnownInput_1=fieldInput.getText();
 			lastKnownInput_2=fieldInput2.getText();

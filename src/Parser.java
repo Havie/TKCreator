@@ -379,7 +379,7 @@ public class Parser {
 		String spacing4= "	"; 
 		int index= startingIndex;
 		String s="";
-
+		Driver.print("CALLED HERE:"+eventKey+spacing2+"VAR_CHANCE");
 		s+=((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default"+"\n");
 		s+=((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1"+"\n");
 		//Ini the vars for factions 
@@ -598,6 +598,10 @@ public class Parser {
 						return;
 						}
 					}
+					if(keys.indexOf("3k_main_")==-1)
+					{output1.setText("InvalidEntry for region, needs prefix '3k_main'");
+					return;
+					}
 					ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
 				}
 				else if (targetKey.equals("GEN_CND_FACTION"))
@@ -695,49 +699,49 @@ public class Parser {
 		output2.setText(finalReturn);
 	}
 
-	public String OutputIncidentTitleTXT(String eventName)
+	public String OutputIncidentTitleTXT(String eventName, String titleTXT)
 	{
 		String title="3k_main_title_";
 		String spacing1= "	"; //double check 
 		//Driver.print(title+eventName+spacing1+"[PH]Title");
-		return title+eventName+spacing1+"[PH]Title"+"\n";
+		return title+eventName+spacing1+titleTXT+"\n";
 	}
-	public String OutputIncidentDescTXT(String eventName)
+	public String OutputIncidentDescTXT(String eventName, String descTXT)
 	{
 		String description="3k_main_description_";
 		String spacing1= "	"; //double check 
 		//Driver.print(description+eventName+spacing1+"[PH]Desc");
-		return description+eventName+spacing1+"[PH]Desc"+"\n";
+		return description+eventName+spacing1+descTXT+"\n";
 	}
 	public String OutputIncidentTXT(ArrayList<String> eventNames)
 	{	String s="";
 	for(String event: eventNames)
-		s+=OutputIncidentTitleTXT(event);
+		s+=OutputIncidentTitleTXT(event, "[PH]Title");
 	for(String event: eventNames)
-		s+=OutputIncidentDescTXT(event);
+		s+=OutputIncidentDescTXT(event, "[PH]Desc");
 	return s;
 	}
 
-	public void OutputIncidentTXT(String[] eventNames ,JTextArea output1, JTextArea output2)
+	public void OutputIncidentTXT(String[] eventNames ,JTextArea output1, JTextArea output2, String titleText, String descText)
 	{	
 		String s="";
 		for(String event: eventNames)
-			s+=OutputIncidentTitleTXT(event);
+			s+=OutputIncidentTitleTXT(event, titleText);
 		output1.setText(s);
 		s="";
 		for(String event: eventNames)
-			s+=OutputIncidentDescTXT(event);
+			s+=OutputIncidentDescTXT(event, descText);
 		output2.setText(s);
 	}
-	public String OutputDilemmaMainTXT(String eventName, int choices)
+	public String OutputDilemmaMainTXT(String eventName, int choices, String titleText, String descText)
 	{	String s="";
 	String title="3k_main_title_";
 	String description="3k_main_description_";
 	String spacing1= "	"; //double check 
 	//Driver.print(title+eventName+spacing1+"[PH]Title");
-	s+=(title+eventName+spacing1+"[PH]Title"+"\n");
+	s+=(title+eventName+spacing1+titleText+"\n");
 	//Driver.print(description+eventName+spacing1+"[PH]Desc");
-	s+=(description+eventName+spacing1+"[PH]Desc"+"\n");
+	s+=(description+eventName+spacing1+descText+"\n");
 	//Driver.print(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title");
 
 	return s;
@@ -766,20 +770,20 @@ public class Parser {
 
 	return s;
 	}
-	public String OutputDilemmaTXT(ArrayList<String> eventNames, int choices )
+	public String OutputDilemmaTXT(ArrayList<String> eventNames, int choices,String titleText, String descText )
 	{
 		String s="";
 		for(String event: eventNames)
-			s+=OutputDilemmaMainTXT(event, choices);
+			s+=OutputDilemmaMainTXT(event, choices, titleText,  descText);
 		for(String event: eventNames)
 			s+=OutputDilemmaChoiceTXT(event, choices);
 		return s;
 	}
-	public void OutputDilemmaTXT(String[] eventNames, int choices ,JTextArea output1, JTextArea output2)
+	public void OutputDilemmaTXT(String[] eventNames, int choices ,JTextArea output1, JTextArea output2,String titleText, String descText)
 	{
 		String s="";
 		for(String event: eventNames)
-			s+=OutputDilemmaMainTXT(event, choices);
+			s+=OutputDilemmaMainTXT(event, choices,  titleText,  descText);
 		output1.setText(s);
 		s="";
 		for(String event: eventNames)
