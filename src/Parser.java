@@ -590,27 +590,27 @@ public class Parser {
 							{
 								index= keys.indexOf("_resource");
 								if(index==-1)
-									{output1.setText("InvalidEntry");
+									{output1.setText("InvalidEntry for region, needs _capital or _resource");
 										return;
 									}
 							}
 						ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
 					}
-					if (targetKey.equals("GEN_CND_FACTION"))
+					else if (targetKey.equals("GEN_CND_FACTION"))
 					{ //"3k_main_faction_cao_cao" --> "cao_cao"
 						int index= keys.indexOf("_faction");
 						if(index==-1)
-							{output1.setText("InvalidEntry");
+							{output1.setText("InvalidEntry for faction name, needs _faction");
 								return;
 							}
 						ReplacementKey=keys.substring(keys.indexOf("_faction")+9, keys.length());
 					}
-					if (targetKey.equals("GEN_CND_CHARACTER_TEMPLATE"))
+					else if (targetKey.equals("GEN_CND_CHARACTER_TEMPLATE"))
 					{ //"3k_main_template_historical_lu_bu_hero_fire" --> "lu_bu" 
 						//"3k_dlc05_template_historical_lu_bu_hero_fire" --> "lu_bu" 
 						String id="_template_historical_";
 						int index= keys.indexOf(id);
-						if (index==-1){output1.setText("InvalidEntry");return;}
+						if (index==-1){output1.setText("InvalidEntry for Character, needs _template_historical");return;}
 						else 
 						{
 							if (keys.indexOf("_hero")==-1){output1.setText("InvalidEntry");return;}
@@ -639,6 +639,9 @@ public class Parser {
 							initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
 							//Driver.print("EventName="+initialEvent);
 							firstLine=false;
+							if(initialEvent.indexOf("_")==-1)
+								{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+									
 							initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
 							initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
 							initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
