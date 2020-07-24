@@ -93,6 +93,7 @@ public class GUI implements ActionListener{
 	JScrollPane scroll1 ;
 	JScrollPane scroll2 ;
 	JCheckBox eventKeyOverride;
+	JPanel overrideOptionsPanel;
 
 	//Output
 	private JPanel centerPanel_output;
@@ -221,7 +222,7 @@ public class GUI implements ActionListener{
 		SetGrabBagColumn( grabBagInput2,  scroll4, 1, 1, new Insets(1,10,1,10));
 		//topPanel.setSize(500, 100);
 
-		SetUpCloned();
+		SetUpCloned(true);
 		SetUpNew();
 
 		centerPanel.add(centerPanel_input);
@@ -262,67 +263,147 @@ public class GUI implements ActionListener{
 		centerPanel_input.repaint();
 		SizeTextBoxes();
 	}
-	private void SetUpCloned()
+	private void SetUpCloned(boolean notText)
 	{
 		ClearCenter();
-		targetChoice = new JComboBox<String>(TARGETOPTIONS);
-		targetChoice.setSelectedIndex(0);
-		targetChoice.addActionListener(this);
-		lineChoice= new JTextField("Optional key addon");
 		
-		//Output Changes 
-		outlabel_left.setText("New Keys");
-		outlabel_right.setText("New Lines");
-		outlabel_right.setForeground(Color.WHITE);
-		fieldOutput2.setVisible(true);
-		
-		//Input Creation
-		JLabel label_input = new JLabel("Input");
-		label_input.setForeground(Color.white);
-		label_input.setHorizontalAlignment(SwingConstants.CENTER);
-		inlabel_left = new JLabel("New Values");
-		inlabel_left.setForeground(Color.white);
-		inlabel_left.setHorizontalAlignment(SwingConstants.CENTER);
-		inlabel_right = new JLabel("Lines To Clone");
-		inlabel_right.setForeground(Color.white);
-		inlabel_right.setHorizontalAlignment(SwingConstants.CENTER);
-		eventKeyOverride= new JCheckBox("Insert");
-		eventKeyOverride.addActionListener(this);
-
 
 		fieldInput= new JTextArea(2,2);
-		fieldInput2= new JTextArea(2,2);
 		scroll1 = new JScrollPane(fieldInput);
-		scroll2 = new JScrollPane(fieldInput2);
 		SetScrollBar(scroll1, fieldInput);
-		SetScrollBar(scroll2, fieldInput2);
 		SetScrollBar(scroll3, fieldOutput);
 		SetScrollBar(scroll4, fieldOutput2);
+		
+		ChangeTextOptions(notText);
 
-		//Input
-		centerPanel_input.setLayout(new BorderLayout() );
-		centerPanel_input.add(label_input, BorderLayout.PAGE_START);
-		JLabel grabBagInput= new JLabel();
-		grabBagInput.setLayout(new GridBagLayout());
-		centerPanel_input.add(grabBagInput, BorderLayout.CENTER);
-		SetGrabBagColumn( grabBagInput,  inlabel_left, 0, 0,  new Insets(1,1,1,1));
-		SetGrabBagColumn( grabBagInput,  inlabel_right, 0, 1, new Insets(1,1,1,1));
-		SetGrabBagColumn( grabBagInput,  scroll1, 1, 0, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  scroll2, 1, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  targetChoice, 2, 0, new Insets(1,10,1,10));
-		JPanel override= new JPanel();
-		override.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
-		JLabel overrideDesc= new JLabel("Key manipulation options:");
-		override.add(overrideDesc);
-		override.add(Box.createRigidArea(new Dimension(30, 0)));
-		override.add(lineChoice);
-		override.add(Box.createRigidArea(new Dimension(5, 0)));
-		override.add(eventKeyOverride);
-		//SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
-		//SetGrabBagColumn( grabBagInput,  eventKeyOverride, 3, 1, new Insets(1,10,1,10));
-		SetGrabBagColumn( grabBagInput,  override, 2, 1, new Insets(1,10,1,10));
+		
 
 		ReDrawWindow();
+	}
+	private void ChangeTextOptions(boolean notText)
+	{
+		inlabel_left= new JLabel();
+		inlabel_right= new JLabel();
+		JLabel label_input = new JLabel();
+		SetLabel(label_input, "Input", Color.WHITE);
+
+		
+		if (notText)
+		{
+
+			
+			//Input Changes 
+			targetChoice = new JComboBox<String>(TARGETOPTIONS);
+			targetChoice.setSelectedIndex(0);
+			targetChoice.addActionListener(this);
+			fieldInput2= new JTextArea(2,2);
+			scroll2 = new JScrollPane(fieldInput2);
+			SetScrollBar(scroll2, fieldInput2);
+			SetLabel(inlabel_left, "New Values", Color.WHITE);
+			SetLabel(inlabel_right, "Lines To Clone", Color.WHITE);
+			eventKeyOverride= new JCheckBox("Insert");
+			eventKeyOverride.addActionListener(this);
+			lineChoice= new JTextField("Optional key addon");
+			
+			//Output Changes 
+			outlabel_left.setText("New Keys");
+			outlabel_right.setText("New Lines");
+			outlabel_right.setForeground(Color.WHITE);
+			fieldOutput2.setVisible(true);
+			
+
+
+			
+			//Create Layout
+			centerPanel_input.setLayout(new BorderLayout() );
+			centerPanel_input.add(label_input, BorderLayout.PAGE_START);
+			JLabel grabBagInput= new JLabel();
+			grabBagInput.setLayout(new GridBagLayout());
+			centerPanel_input.add(grabBagInput, BorderLayout.CENTER);
+			SetGrabBagColumn( grabBagInput,  inlabel_left, 0, 0,  new Insets(1,1,1,1));
+			SetGrabBagColumn( grabBagInput,  inlabel_right, 0, 1, new Insets(1,1,1,1));
+			SetGrabBagColumn( grabBagInput,  scroll1, 1, 0, new Insets(1,10,1,10));
+			SetGrabBagColumn( grabBagInput,  scroll2, 1, 1, new Insets(1,10,1,10));
+			SetGrabBagColumn( grabBagInput,  targetChoice, 2, 0, new Insets(1,10,1,10));
+			overrideOptionsPanel= new JPanel();
+			overrideOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
+			JLabel overrideDesc= new JLabel("Key manipulation options:");
+			overrideOptionsPanel.add(overrideDesc);
+			overrideOptionsPanel.add(Box.createRigidArea(new Dimension(30, 0)));
+			overrideOptionsPanel.add(lineChoice);
+			overrideOptionsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+			overrideOptionsPanel.add(eventKeyOverride);
+			//SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
+			//SetGrabBagColumn( grabBagInput,  eventKeyOverride, 3, 1, new Insets(1,10,1,10));
+			SetGrabBagColumn( grabBagInput,  overrideOptionsPanel, 2, 1, new Insets(1,10,1,10));
+			
+		}
+		else
+		{
+
+			lastKnownInput_1=fieldInput.getText();
+			lastKnownInput_2=fieldInput2.getText();
+			fieldInput.setText(lastKnownInputText_1);
+			
+			
+			//InputChanges
+			targetChoice = new JComboBox<String>(TEXTOPTIONS);
+			targetChoice.setSelectedIndex(0);
+			targetChoice.addActionListener(this);
+			SetLabel(inlabel_left, "Event Names", Color.WHITE);
+			SetLabel(inlabel_right, "Text Options", Color.WHITE);
+			lineChoice= new JTextField("2");
+			//Make a new div for new labels
+			JPanel TextOptionsDiv  =new JPanel();
+			TextOptionsDiv.setLayout(new GridBagLayout());
+			//Add new choices here 
+			JLabel op0= new JLabel("Event Type :");
+			JLabel op1= new JLabel("Title Text :");
+			JTextField op1_text = new JTextField("[PH]Title");
+			JLabel op2= new JLabel("DESC Text :");
+			JTextField op2_text = new JTextField("[PH]Desc");
+			JLabel op3= new JLabel("Enter # of Choices (dilemma only)");
+			SetGrabBagColumn( TextOptionsDiv,  op0, 0, 0, new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  targetChoice, 0, 1, new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  op1, 1, 0,  new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  op1_text, 1, 1,  new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  op2, 2, 0,  new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  op2_text, 2, 1,  new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  op3, 3, 0,  new Insets(1,1,10,1));
+			SetGrabBagColumn( TextOptionsDiv,  lineChoice, 3, 1,  new Insets(1,1,10,1));
+			
+			
+			//Output Changes 
+			SetLabel(outlabel_left,"Titles/Descriptions", Color.WHITE );
+			SetLabel(outlabel_right,"Choice Labels", Color.WHITE );
+			fieldOutput.setText("");
+			fieldOutput2.setText("");
+
+			
+			
+			//Create Layout
+			centerPanel_input.setLayout(new BorderLayout() );
+			centerPanel_input.add(label_input, BorderLayout.PAGE_START);
+			JLabel grabBagInput= new JLabel();
+			grabBagInput.setLayout(new GridBagLayout());
+			centerPanel_input.add(grabBagInput, BorderLayout.CENTER);
+			SetGrabBagColumn( grabBagInput,  inlabel_left, 0, 0,  new Insets(1,1,1,1));
+			SetGrabBagColumn( grabBagInput,  inlabel_right, 0, 1, new Insets(1,1,1,1));
+			SetGrabBagColumn( grabBagInput,  scroll1, 1, 0, new Insets(1,10,1,10));
+			SetGrabBagColumn( grabBagInput,  TextOptionsDiv, 1, 1, new Insets(1,10,1,10));
+			
+			//SetGrabBagColumn( grabBagInput,  lineChoice, 2, 1, new Insets(1,10,1,10));
+			//SetGrabBagColumn( grabBagInput,  eventKeyOverride, 3, 1, new Insets(1,10,1,10));
+
+		}
+
+		ReDrawWindow();
+	}
+	private void SetLabel(JLabel label, String text, Color c)
+	{
+		label.setText(text);
+		label.setForeground(c);
+		label.setHorizontalAlignment(SwingConstants.CENTER);
 	}
 	private void SetUpNew()
 	{
@@ -620,7 +701,7 @@ public class GUI implements ActionListener{
 					SwitchLogic(modeChoiceDropdown);
 					break;
 				case 1: //CLONE
-					SetUpCloned();
+					SetUpCloned(true);
 					setDropdownRender(false);
 					SwitchLogic(modeChoiceDropdown);
 					break;
@@ -633,12 +714,12 @@ public class GUI implements ActionListener{
 					switch(box.getSelectedIndex())
 					{
 					case 0: //dilemma 
-						Driver.print("IS THIS HAPPEING? (1)");
+						//Driver.print("IS THIS HAPPEING? (1)");
 						outlabel_left.setText("Titles/Descriptions");
 						outlabel_right.setText("Choice Labels");
 						break;
 					case 1: //incident
-						Driver.print("IS THIS HAPPEING? (2)");
+						//Driver.print("IS THIS HAPPEING? (2)");
 						outlabel_left.setText("Titles");
 						outlabel_right.setText("Descriptions");
 						break;
@@ -680,9 +761,9 @@ public class GUI implements ActionListener{
 		modeChoice=modeChange;
 		switch(modeChoice)
 		{
-		case 0:
+		case 0: //DIL
 			//since i cant seem to have 1 hidden Jtext area behind the other, we will just save the info 
-			if(lastMode==2 ) //TEXT
+			if(lastMode==2 ) //was TEXT
 			{
 				if (modeDropdown.getSelectedIndex() == 0) //NEW
 					{
@@ -690,6 +771,7 @@ public class GUI implements ActionListener{
 					}
 				else if (modeDropdown.getSelectedIndex() == 1) //CLONED
 				{
+					
 					setDropdownRender(false);
 					lastKnownInputText_1=fieldInput.getText();
 					lastKnownInputText_2=fieldInput2.getText();
@@ -705,7 +787,7 @@ public class GUI implements ActionListener{
 					lineChoice.setText("Optional key addon");
 					fieldOutput.setText("");
 					fieldOutput2.setText("");
-					Driver.print("(1)DID THIS TRIGGER ACTION?");
+					//Driver.print("(1)DID THIS TRIGGER ACTION?");
 					for(String s : TARGETOPTIONS)
 						targetChoice.addItem(s);
 					
@@ -714,8 +796,8 @@ public class GUI implements ActionListener{
 
 			}
 			break;
-		case 1:
-			if(lastMode==2)
+		case 1: //INC
+			if(lastMode==2) //was text
 			{
 				if (modeDropdown.getSelectedIndex() == 0) //NEW
 					SetUpNew();
@@ -742,18 +824,15 @@ public class GUI implements ActionListener{
 				}
 			}
 			break;
-		case 2:
-
+		case 2: //TEXT
+			//sets the text red for text mode if under cloned menu
 			if (modeDropdown.getSelectedIndex() == 0) //NEW
-			{
-				SetUpCloned();
 				setDropdownRender(true);
-			}
 			else
 				setDropdownRender(false);
-
-
-			lastKnownInput_1=fieldInput.getText();
+			
+			SetUpCloned(false);
+			/*lastKnownInput_1=fieldInput.getText();
 			lastKnownInput_2=fieldInput2.getText();
 			fieldInput.setText(lastKnownInputText_1);
 			fieldInput2.setText(lastKnownInputText_2);
@@ -768,7 +847,7 @@ public class GUI implements ActionListener{
 			fieldOutput2.setText("");
 			lineChoice.setText("Enter # of Choices (dilemma only)");
 			for(String s : TEXTOPTIONS)
-				targetChoice.addItem(s);
+				targetChoice.addItem(s); */
 
 
 			break;
@@ -788,7 +867,7 @@ public class GUI implements ActionListener{
 		}
 
 	}
-	private void SetGrabBagColumn(JLabel pane, Component component, int row, int col, Insets inset)
+	private void SetGrabBagColumn(JComponent pane, Component component, int row, int col, Insets inset)
 	{
 		SetGrabBagColumn( pane,  component, row,  col,  inset, 1);
 	}
