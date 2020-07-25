@@ -110,11 +110,11 @@ public class GUI implements ActionListener{
 
 	//finals
 	final String[] MODEOPTIONS= {"NEW", "CLONE"};
-	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text"};
+	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text", "SKILLS"};
 	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
 	final String[] TEXTOPTIONS= {"Dilemma", "Incident"};
-	final Color[] VALID = {Color.BLACK, Color.BLACK, Color.BLACK};
-	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED};
+	final Color[] VALID = {Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK};
+	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED, Color.RED};
 
 	//Vars
 	private int modeChoice=0;

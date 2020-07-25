@@ -379,7 +379,6 @@ public class Parser {
 		String spacing4= "	"; 
 		int index= startingIndex;
 		String s="";
-		Driver.print("CALLED HERE:"+eventKey+spacing2+"VAR_CHANCE");
 		s+=((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default"+"\n");
 		s+=((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1"+"\n");
 		//Ini the vars for factions 
@@ -577,12 +576,14 @@ public class Parser {
 		//Driver.print("targetIndex"+targetIndex);
 		String newKeys="";
 		String finalReturn="";
+		boolean skip=false;
 
 		boolean firstLine=true;
 		for(String keys: eventKeys1)
 		{
+			skip=false;
 			if(keys.equals(""))
-				break;
+				skip=true;
 			if(overrideKey)
 				ReplacementKey= "";
 			else 
@@ -597,12 +598,17 @@ public class Parser {
 						{output1.setText("InvalidEntry for region, needs _capital or _resource");
 						return;
 						}
+						else
+						{output1.setText("TMP turned off for resource, " +keys);
+						skip=true;
+						}
 					}
 					if(keys.indexOf("3k_main_")==-1)
 					{output1.setText("InvalidEntry for region, needs prefix '3k_main'");
 					return;
 					}
-					ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
+					//ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
+					ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, keys.length());
 				}
 				else if (targetKey.equals("GEN_CND_FACTION"))
 				{ //"3k_main_faction_cao_cao" --> "cao_cao"
@@ -630,70 +636,74 @@ public class Parser {
 					ReplacementKey= "TODO";
 				}
 			}
-
-			for(int i =0; i< linesIn.length; ++i)
-			{ 
-				String line= linesIn[i];
-				if (line.equals(""))
-					break;
-				String noKey=line.substring(0,line.indexOf(spacing1));
-				//Driver.print("nokey="+noKey);		
-				if (firstLine)//first time through grab our starting Index and event key preface
-				{
-					startingIndex=0;
-					try{startingIndex=Integer.parseInt(noKey);}
-					catch(NumberFormatException e){startingIndex=0;}
-
-					initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
-					initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
-					//Driver.print("EventName="+initialEvent);
-					firstLine=false;
-					if(overrideKey)
-						initialPreface="";
-					else
-					{
-					if(initialEvent.indexOf("_")==-1)
-					{
-						output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
-						else if (initialEvent.indexOf("_")== initialEvent.lastIndexOf("_"))
-						{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
-						initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
-						initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
-						initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
-						//Driver.print("initialPreface="+initialPreface);
-					}
-				}
-				//Check if we need to replace anything
-				if(line.contains(targetKey) && line.contains(targetIndex))
-				{
-					//Driver.print("REPLACE LINE= "+line);
-					//find whats in the middle of them 
-					String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
-					//Driver.print("LINEBEFORE= "+lineBefore);
-					String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
-					//Driver.print("LINEAFTER= "+lineAfter);
-					line= lineBefore+spacing1+keys+spacing1+lineAfter;
-					//Driver.print("LINE FINAL= "+line);
-				}
-				//Add to our modified list 
-				lines.add(line);
-			}
-			//Create our new starting Index
-			startingIndex=startingIndex+lines.size();
-			for(String entry: lines)
+			if(!skip)
 			{
-				//find and update the number id 
-				String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
-				//Driver.print("TMPENTRY="+tmpEntry);
-				//Driver.print("initialPreface"+initialPreface);
-				//Driver.print("ReplacementKey"+ReplacementKey);
-				//Driver.print("startingIndex"+startingIndex++);
-				//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
-				
-				finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+spacing1+tmpEntry+"\n");
-			}
-			newKeys += initialPreface+OptionalText+ReplacementKey+"_"+type+"\n";
+				for(int i =0; i< linesIn.length; ++i)
+				{ 
+					String line= linesIn[i];
+					if (line.equals(""))
+						break;
+					String noKey=line.substring(0,line.indexOf(spacing1));
+					//Driver.print("nokey="+noKey);		
+					if (firstLine)//first time through grab our starting Index and event key preface
+					{
+						startingIndex=0;
+						try{startingIndex=Integer.parseInt(noKey);}
+						catch(NumberFormatException e){startingIndex=0;}
 
+						initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
+						initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
+						//Driver.print("EventName="+initialEvent);
+						firstLine=false;
+						if(overrideKey)
+							initialPreface="";
+						else
+						{
+							if(initialEvent.indexOf("_")==-1)
+							{
+								output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+							else if (initialEvent.indexOf("_")== initialEvent.lastIndexOf("_"))
+							{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+							initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
+							initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
+							initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
+							//Driver.print("initialPreface="+initialPreface);
+						}
+					}
+					//Check if we need to replace anything
+					if(line.contains(targetKey) && line.contains(targetIndex))
+					{
+						//Driver.print("REPLACE LINE= "+line);
+						//find whats in the middle of them 
+						String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
+						//Driver.print("LINEBEFORE= "+lineBefore);
+						String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
+						//Driver.print("LINEAFTER= "+lineAfter);
+						line= lineBefore+spacing1+keys+spacing1+lineAfter;
+						//Driver.print("LINE FINAL= "+line);
+					}
+					//Add to our modified list 
+					lines.add(line);
+				}
+				//Create our new starting Index
+				startingIndex=startingIndex+lines.size();
+				String extraAppend="_";
+
+				for(String entry: lines)
+				{
+					//find and update the number id 
+					String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
+					//Driver.print("TMPENTRY="+tmpEntry);
+					//Driver.print("initialPreface"+initialPreface);
+					//Driver.print("ReplacementKey"+ReplacementKey);
+					//Driver.print("startingIndex"+startingIndex++);
+					//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
+
+					finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
+				}
+				newKeys += initialPreface+OptionalText+ReplacementKey+extraAppend+type+"\n";
+				lines.clear();
+			}
 		}
 		output1.setText(newKeys);
 		output2.setText(finalReturn);
@@ -701,14 +711,14 @@ public class Parser {
 
 	public String OutputIncidentTitleTXT(String eventName, String titleTXT)
 	{
-		String title="3k_main_title_";
+		String title="incidents_localised_title_";
 		String spacing1= "	"; //double check 
 		//Driver.print(title+eventName+spacing1+"[PH]Title");
 		return title+eventName+spacing1+titleTXT+"\n";
 	}
 	public String OutputIncidentDescTXT(String eventName, String descTXT)
 	{
-		String description="3k_main_description_";
+		String description="incidents_localised_description_";
 		String spacing1= "	"; //double check 
 		//Driver.print(description+eventName+spacing1+"[PH]Desc");
 		return description+eventName+spacing1+descTXT+"\n";
@@ -735,8 +745,8 @@ public class Parser {
 	}
 	public String OutputDilemmaMainTXT(String eventName, int choices, String titleText, String descText)
 	{	String s="";
-	String title="3k_main_title_";
-	String description="3k_main_description_";
+	String title="dilemmas_localised_title_";
+	String description="dilemmas_localised_description_";
 	String spacing1= "	"; //double check 
 	//Driver.print(title+eventName+spacing1+"[PH]Title");
 	s+=(title+eventName+spacing1+titleText+"\n");
@@ -748,8 +758,8 @@ public class Parser {
 	}
 	public String OutputDilemmaChoiceTXT(String eventName, int choices)
 	{	String s="";
-	String choiceTitle="3k_main_choice_title_";
-	String choiceLabel="3k_main_choice_label_";
+	String choiceTitle="cdir_events_dilemma_choice_details_localised_choice_title_";
+	String choiceLabel="cdir_events_dilemma_choice_details_localised_choice_label_";
 	String spacing1= "	"; //double check 
 	//Choices
 	s+=(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title"+"\n");
