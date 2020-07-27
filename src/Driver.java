@@ -8,8 +8,9 @@ public class Driver {
 	
 	public static void main (String[] args) throws IOException 
 	{
-		//print("----TK Creator------");
+		print("----TK Creator------");
 		GUI gui=new GUI();
+
 		//InIDETest();
 	}
 	
