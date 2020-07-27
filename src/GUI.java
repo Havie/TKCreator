@@ -615,8 +615,8 @@ public class GUI implements ActionListener{
 			eventKeyOverride.setText("Override");
 		else if (a.getActionCommand().equals("Override"))
 			eventKeyOverride.setText("Insert");
-		else
-			Driver.print("Did not generate..action::"+a.getActionCommand());
+		//else
+			//Driver.print("Did not generate..action::"+a.getActionCommand());
 		//Known-Issues
 	}
 	private void Generate()

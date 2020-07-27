@@ -242,7 +242,7 @@ public class Parser {
 								{
 									if (keySearch)
 									{
-										Driver.print("LinesIn Size=" +linesIn.length);
+										//Driver.print("LinesIn Size=" +linesIn.length);
 										if(line.contains(OptionalText))
 										{
 											line=line.replace(OptionalText, keys);
@@ -263,7 +263,7 @@ public class Parser {
 										initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
 										initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
 										initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
-										Driver.print("initialPreface="+initialPreface);
+										//Driver.print("initialPreface="+initialPreface);
 
 									}
 								}
