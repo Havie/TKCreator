@@ -30,19 +30,7 @@ public class Driver {
 		// that need to be cloned for each region
 		p.FindSpecificKeys(FileDIR+"@sat_havie_governors.lua", FileDIR+"regions.txt");
 
-		
-		
-		ArrayList<String> characters= new ArrayList<String>();
-		characters.add("3k_main_template_historical_lu_bu_hero_fire");
-		characters.add("3k_main_template_historical_ji_ling_hero_fire");
-		ArrayList<String> factions= new ArrayList<String>();
-		factions.add("3k_main_faction_yuan_shu");
-		factions.add("3k_main_faction_cao_cao");
-		ArrayList<String> regions= new ArrayList<String>();
-		regions.add("3k_main_yingchuan_capital");
-		//DilemmaOptions
-		p.OutputNewEventOptionLines(6089,"3k_lua_yuanshe_helps_lubi_dilemma", characters, factions, regions);
-		//print("finished");
+	
 		ArrayList<String> eventKeys = new ArrayList<String>();
 		eventKeys.add("3k_lua_yuanshe_helps_lubi_dilemma");
 		p.OutputClonedEventLines(FileDIR+"dilemma_payload.txt", eventKeys);
@@ -55,8 +43,5 @@ public class Driver {
 
 
 
-	public static void print(String s)
-	{
-		System.out.println(s);
-	}
+	public static void print(String s){System.out.println(s);}
 }

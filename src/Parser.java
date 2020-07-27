@@ -22,6 +22,12 @@ public class Parser {
 	private String defaultPath="C:\\Users\\";
 	private String outputPath="C:\\Users\\TKout.txt";
 	private String programName="ignore";
+	
+	// For OutputNewEventOptionLines , hopefully spacing doesnt change for other methods?
+	final String spacing1= "	";
+	final String spacing2= "	";
+	final String spacing3= "	";
+	final String spacing4= "	"; 
 
 	public enum eTargetType {Target_Region_1, Target_Region_2, Target_Character_1, Target_Character_2, Target_Faction_1,Target_Faction_2, KEY_SEARCH};
 
@@ -30,7 +36,518 @@ public class Parser {
 		map=new HashMap<String,Node>();
 		newPrograms=new HashMap<String,Node>();
 	}
+	public static eTargetType eTargetType(int selectedIndex) {
+		return eTargetType.values()[selectedIndex];
+	}
 
+	/**
+	 * Takes in values to generate new Cdir_event_option_lines (works for dilemmas or incidents)
+	 * @param startingIndex (int)
+	 * @param eventKey  (string)
+	 * @param targetChars (ArrayList<String>)
+	 * @param targetFactions (ArrayList<String>)
+	 * @param targetRegions (ArrayList<String>)
+	 */
+	public void OutputNewEventOptionLines(int startingIndex, String eventKey, ArrayList<String> targetChars,ArrayList<String> targetFactions,ArrayList<String> targetRegions, JTextArea output1, JTextArea output2)
+	{
+		int index= startingIndex;
+		String s="";
+		s+=HandleFactions(targetFactions,index, eventKey);
+		s+=HandleCharacters(targetChars, index, eventKey);
+		s+=HandleRegions(targetRegions, index, eventKey);
+		output1.setText(s);
+	}
+	private String HandleFactions(ArrayList<String> targetFactions, int index, String eventKey)
+	{
+		int targetCount=1;
+		String target="target_faction_";
+		String cndTarget="GEN_TARGET_FACTION";
+		String cndTemplate="GEN_CND_FACTION";
+		String s="";
+		//DEFAULTS
+		s+=((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default"+"\n");
+		s+=((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1"+"\n");
+
+		for(String k: targetFactions)
+		{
+			if(k.equals("default"))
+			{
+				s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
+				targetCount++;
+			}
+			else
+				s+=CreateLine( index,  eventKey, cndTarget,  cndTemplate ,  target,  targetCount,  k );
+		}
+		return s;
+	}
+ 	private String HandleCharacters(ArrayList<String> targetChars, int index, String eventKey)
+ 	{
+ 		//Vars for Chars
+		String target="target_character_";
+		int targetCount=1;
+		String cndTarget="GEN_TARGET_CHARACTER";
+		String cndTemplate="GEN_CND_CHARACTER_TEMPLATE";
+		String s="";
+		for(String k: targetChars)
+			s+=CreateLine( index,  eventKey, cndTarget,  cndTemplate ,  target,  targetCount,  k );
+		
+		return s;
+		
+ 	}
+	private String HandleRegions(ArrayList<String> targetRegions, int index, String eventKey)
+	{
+		//Vars for regions
+		String target="target_region_";
+		int targetCount=1;
+		String cndTarget="GEN_TARGET_REGION";
+		String cndTemplate="GEN_CND_REGION";
+		String s= "";
+		for(String k: targetRegions)
+			s+=CreateLine( index,  eventKey, cndTarget,  cndTemplate ,  target,  targetCount,  k );
+		
+		return s;
+	}
+ 	private String CreateLine(int index, String eventKey, String cndTarget, String cndTemplate , String target, int targetCount, String key )
+	{
+		String s="";
+		s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
+		s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+key+spacing4+target+(targetCount)+"\n");
+		++targetCount;
+		return s;
+	}
+
+	private String DecideTargetKey(eTargetType target)
+	{
+		String s = null;
+		if(target==eTargetType.Target_Character_1 || target==eTargetType.Target_Character_2)
+			s="GEN_CND_CHARACTER_TEMPLATE";
+		else if(target==eTargetType.Target_Faction_1 || target==eTargetType.Target_Faction_2)
+			s="GEN_CND_FACTION";
+		else if(target==eTargetType.Target_Region_1 || target==eTargetType.Target_Region_2)
+			s="GEN_CND_REGION";
+		else if (target==eTargetType.KEY_SEARCH)
+			s="KEY_SEARCH";
+		return s;
+	}
+	private String DecideTargetIndex(eTargetType target)
+	{
+		String s = null;
+		if(target==eTargetType.Target_Character_1)
+			s="target_character_1";
+		else if(target==eTargetType.Target_Character_2)
+			s="target_character_2";
+		else if(target==eTargetType.Target_Faction_1)
+			s="target_faction_1";
+		else if( target==eTargetType.Target_Faction_2)
+			s="target_faction_2";
+		else if(target==eTargetType.Target_Region_1)
+			s="target_region_1";
+		else if( target==eTargetType.Target_Region_2)
+			s="target_region_2";
+		else if (target==eTargetType.KEY_SEARCH)
+			s="KEY_SEARCH";
+		return s;
+	}
+	public void OutputClonedEventLinesRaw(String Input, String eventKeys, eTargetType target, String type, String OptionalText, boolean overrideKey, JTextArea output1, JTextArea output2) 
+	{
+		//Driver.print("OutputClonedEventLinesRaw");
+		int startingIndex=0;
+		String spacing1="	";
+		String initialEvent="";
+		String initialPreface="";
+		String ReplacementKey="";
+		String lastReplacementKey=""; //Used by Clone raw input text keySearch
+		ArrayList<String> lines= new ArrayList<String>();
+		String[] linesIn = Input.split("\n");
+		String[] eventKeys1 = eventKeys.split("\n");
+		String targetKey = DecideTargetKey(target);
+		String targetIndex= DecideTargetIndex(target);
+
+		//Driver.print("linesIN="+linesIn.length);
+		//Driver.print("eventKeys1="+eventKeys1.length);
+		//Driver.print("targetKey"+targetKey);
+		//Driver.print("targetIndex"+targetIndex);
+		String newKeys="";
+		String finalReturn="";
+		boolean skip=false;
+		boolean keySearch=false;
+
+		boolean firstLine=true;
+		for(String keys: eventKeys1)
+		{
+			skip=false;
+			if(keys.equals(""))
+				skip=true;			
+			if(!skip)
+			{
+				if((DecideTargetKey(target).equals("KEY_SEARCH")))
+						keySearch=true;
+				else
+					VerifyConditions( skip, overrideKey,  keys,  target,  targetKey,  ReplacementKey,  output1);
+
+				for(int i =0; i< linesIn.length; ++i)
+				{ 	
+					String line= linesIn[i];
+					if (line.equals(""))
+						break;
+
+					if(keySearch&&!firstLine)
+					{
+						//Check if the line contains the string to replace
+						//replace it 
+						//make it so the #s are separate from the rest of the line.
+						if(line.contains(OptionalText))
+						{
+							line=line.replace(OptionalText, keys);
+							initialPreface="";
+							initialEvent= spacing1;
+							//used for new keys  //overrideKey ?
+							String noKey=line.substring(0,line.indexOf(spacing1));
+							ReplacementKey=line.substring(noKey.length()+spacing1.length(), line.length());
+							ReplacementKey=ReplacementKey.substring(0, ReplacementKey.indexOf(spacing1))+"\n";
+						}
+						//always add line for final print out
+						lines.add(line);
+					}
+
+					else if(firstLine)
+					{
+						if(overrideKey && keySearch)
+						{
+							if(line.contains(OptionalText))
+								line=line.replace(OptionalText, keys);
+							//always add line for final print out
+							lines.add(line);
+						}
+						else
+						{
+							//1000 3k_main_  gets the #1000
+							String noKey=line.substring(0,line.indexOf(spacing1));
+							//Driver.print("nokey="+noKey);		
+							if (firstLine)//first time through grab our starting Index and event key preface
+							{
+								startingIndex=0;
+								try{startingIndex=Integer.parseInt(noKey);}
+								catch(NumberFormatException e){startingIndex=0;}
+								startingIndex+=linesIn.length;
+								//Driver.print("STRTING INDEX="+startingIndex);
+								//Gets 1000 3k_main_whatever ==> 3k_main_whatever
+								initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
+								initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
+								//Driver.print("EventName="+initialEvent);
+								firstLine=false;
+								if(overrideKey) // if we are over riding the whole key, handle that at the end
+									initialPreface="";
+								else
+								{
+									if (keySearch)
+									{
+										Driver.print("LinesIn Size=" +linesIn.length);
+										if(line.contains(OptionalText))
+										{
+											line=line.replace(OptionalText, keys);
+											initialPreface="";
+											initialEvent= spacing1;
+											//used for new keys 
+											ReplacementKey=line.substring(noKey.length()+spacing1.length(), line.length());
+											ReplacementKey=ReplacementKey.substring(0, ReplacementKey.indexOf(spacing1))+"\n";
+										}
+									}
+									else
+									{
+										if(initialEvent.indexOf("_")==-1)
+											{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+										else if (initialEvent.indexOf("_")== initialEvent.lastIndexOf("_"))
+											{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+										//Get the first 3k_main_whatever_name  ==> whatever_name  (gets rid of first two _'2 aka 3k_main_ )
+										initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
+										initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
+										initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
+										Driver.print("initialPreface="+initialPreface);
+
+									}
+								}
+							}
+							//Check if we need to replace anything, and add to list for later
+							CheckLine( line, keys,  spacing1,  targetKey, targetIndex,lines);
+
+						}
+					}
+					else
+						CheckLine( line, keys,  spacing1,  targetKey, targetIndex,lines);
+					//Create our new starting Index
+					//startingIndex+=lines.size();
+					String extraAppend="_";
+
+
+					for(String entry: lines)
+					{	
+						String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
+
+						//find and update the number id 
+						//Driver.print("initialEvent="+initialEvent);
+						//Driver.print("TMPENTRY="+tmpEntry);
+						//Driver.print("initialPreface"+initialPreface);
+						//Driver.print("ReplacementKey"+ReplacementKey);
+						//Driver.print("startingIndex"+startingIndex);
+						//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
+						//Driver.print("KEeySearch="+keySearch);
+						if(overrideKey)
+						{
+							if(keySearch)
+								finalReturn += (entry+"\n");
+							else //same refactor
+								finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
+
+						}
+						else
+						{
+							if(keySearch)
+								finalReturn += ((startingIndex++)+spacing1+tmpEntry+"\n");
+							else //same refactor
+								finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
+						}
+					}
+					if(!keySearch)
+					{
+						String tmp=initialPreface+OptionalText+ReplacementKey+extraAppend+type+"\n";
+						if(!lastReplacementKey.equals(tmp))
+						{
+							lastReplacementKey=tmp;
+							newKeys += tmp;
+						}
+					}
+					else
+					{  // why this first empty string check?
+						if(lastReplacementKey.equals("") || !lastReplacementKey.equals(ReplacementKey))	
+						{
+							newKeys+=ReplacementKey;
+							lastReplacementKey=ReplacementKey;
+						}
+					}
+					lines.clear();
+				}
+			}
+			output1.setText(newKeys);
+			output2.setText(finalReturn);
+		}
+	}
+	//This logic was becoming too big to look at, has to separate out.
+	private void VerifyConditions(boolean skip, boolean overrideKey, String key, eTargetType target, String targetKey, String ReplacementKey, JTextArea output1)
+	{
+		if(overrideKey)
+			ReplacementKey= "";
+		else 
+		{
+			if (targetKey.equals("GEN_CND_REGION"))
+			{ 
+				if (key.contains("_sea_")) 
+					{output1.setText("Skip seas/rivers, " +key);skip=true;}
+				
+				if(!skip)
+				{
+					//"3k_main_dongjun_capital" --> "dongjun" or "3k_main_dongjun_resource_1" -->"dongjun"
+					int index= key.indexOf("_capital");
+					if (index==-1)
+					{
+						index= key.indexOf("_resource");
+						if(index==-1)
+						{
+							if(key.indexOf("_pass")!=-1)
+								skip=true;
+							else 
+								{output1.setText("InvalidEntry for region, needs _capital or _resource: "+key);return;}
+						}
+						else
+							{output1.setText("TMP turned off for resource, " +key);skip=true;}
+					}
+				}
+				int offset=8;
+				int index2=key.indexOf("3k_main_");
+				if(index2==-1)
+				{
+					offset=9;	
+					//index2=key.indexOf("3k_dlc06_");	
+					index2=key.indexOf("3k_dlc"); // should hopefully work for future DLC
+				}
+				if(index2==-1)  
+					{output1.setText("InvalidEntry for region, needs prefix '3k_main' or '3k_dlc06:  '"+key);return;}
+				ReplacementKey=key.substring(index2+offset, key.length());
+			}
+			else if (targetKey.equals("GEN_CND_FACTION"))
+			{   //"3k_main_faction_cao_cao" --> "cao_cao"
+				int index= key.indexOf("_faction");
+				if(index==-1)
+					{output1.setText("InvalidEntry for faction name, needs _faction");return;}
+				ReplacementKey=key.substring(key.indexOf("_faction")+9, key.length());
+			}
+			else if (targetKey.equals("GEN_CND_CHARACTER_TEMPLATE"))
+			{   //"3k_main_template_historical_lu_bu_hero_fire" --> "lu_bu" 
+				//"3k_dlc05_template_historical_lu_bu_hero_fire" --> "lu_bu" 
+				String id="_template_historical_";
+				int index= key.indexOf(id);
+				if (index==-1)
+					{output1.setText("InvalidEntry for Character, needs _template_historical "+key);return;}
+				else if (key.indexOf("_hero")==-1)
+					{output1.setText("InvalidEntry for Character, needs _hero "+key);return;}
+				ReplacementKey=key.substring(index+id.length(), key.indexOf("_hero"));
+			}
+			else
+				ReplacementKey= "TODO";
+		}
+	}
+
+	private void CheckLine(String line,String keys, String spacing1, String targetKey,String targetIndex, ArrayList<String> lines)
+	{
+		//Check if we need to replace anything
+		if(line.contains(targetKey) && line.contains(targetIndex))
+		{
+			//Driver.print("TARGET KEY= "+targetKey);
+			//Driver.print("TargetIndex= "+targetIndex);
+			//Driver.print("REPLACE LINE= "+line);
+			//find whats in the middle of them 
+			String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
+			//Driver.print("LINEBEFORE= "+lineBefore);
+			String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
+			//Driver.print("LINEAFTER= "+lineAfter);
+			//if(keySearch)
+			//	line= lineBefore+keys+lineAfter;
+			//else
+			line= lineBefore+spacing1+keys+spacing1+lineAfter;
+			//Driver.print("LINE FINAL= "+line);
+		}
+		//Add to our modified list 
+		lines.add(line);
+	}
+	//INCIDENTS - NEW
+	public String OutputIncidentTitleTXT(String eventName, String titleTXT)
+	{
+		String title="incidents_localised_title_";
+		String spacing1= "	"; //double check 
+		//Driver.print(title+eventName+spacing1+"[PH]Title");
+		return title+eventName+spacing1+titleTXT+"\n";
+	}
+	public String OutputIncidentDescTXT(String eventName, String descTXT)
+	{
+		String description="incidents_localised_description_";
+		String spacing1= "	"; //double check 
+		//Driver.print(description+eventName+spacing1+"[PH]Desc");
+		return description+eventName+spacing1+descTXT+"\n";
+	}
+	public String OutputIncidentTXT(ArrayList<String> eventNames)
+	{	String s="";
+	for(String event: eventNames)
+		s+=OutputIncidentTitleTXT(event, "[PH]Title");
+	for(String event: eventNames)
+		s+=OutputIncidentDescTXT(event, "[PH]Desc");
+	return s;
+	}
+	//DILEMMAS - NEW
+	public void OutputIncidentTXT(String[] eventNames ,JTextArea output1, JTextArea output2, String titleText, String descText)
+	{	
+		String s="";
+		for(String event: eventNames)
+			s+=OutputIncidentTitleTXT(event, titleText);
+		output1.setText(s);
+		s="";
+		for(String event: eventNames)
+			s+=OutputIncidentDescTXT(event, descText);
+		output2.setText(s);
+	}
+	public String OutputDilemmaMainTXT(String eventName, int choices, String titleText, String descText)
+	{	String s="";
+	String title="dilemmas_localised_title_";
+	String description="dilemmas_localised_description_";
+	String spacing1= "	"; //double check 
+	//Driver.print(title+eventName+spacing1+"[PH]Title");
+	s+=(title+eventName+spacing1+titleText+"\n");
+	//Driver.print(description+eventName+spacing1+"[PH]Desc");
+	s+=(description+eventName+spacing1+descText+"\n");
+	//Driver.print(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title");
+
+	return s;
+	}
+	public String OutputDilemmaChoiceTXT(String eventName, int choices)
+	{	String s="";
+	String choiceTitle="cdir_events_dilemma_choice_details_localised_choice_title_";
+	String choiceLabel="cdir_events_dilemma_choice_details_localised_choice_label_";
+	String spacing1= "	"; //double check 
+	//Choices
+	s+=(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title"+"\n");
+	if(choices>1)
+		s+=(choiceTitle+eventName+"SECOND"+spacing1+"[PH]button_title"+"\n");
+	if(choices>2)
+		s+=(choiceTitle+eventName+"THIRD"+spacing1+"[PH]button_title"+"\n");
+	if(choices>3)
+		s+=(choiceTitle+eventName+"FOURTH"+spacing1+"[PH]button_title"+"\n");
+	//labels
+	s+=(choiceLabel+eventName+"FIRST"+spacing1+"[PH]button_label"+"\n");
+	if(choices>1)
+		s+=(choiceLabel+eventName+"SECOND"+spacing1+"[PH]button_label"+"\n");
+	if(choices>2)
+		s+=(choiceLabel+eventName+"THIRD"+spacing1+"[PH]button_label"+"\n");
+	if(choices>3)
+		s+=(choiceLabel+eventName+"FOURTH"+spacing1+"[PH]button_label"+"\n");
+
+	return s;
+	}
+	public String OutputDilemmaTXT(ArrayList<String> eventNames, int choices,String titleText, String descText )
+	{
+		String s="";
+		for(String event: eventNames)
+			s+=OutputDilemmaMainTXT(event, choices, titleText,  descText);
+		for(String event: eventNames)
+			s+=OutputDilemmaChoiceTXT(event, choices);
+		return s;
+	}
+	public void OutputDilemmaTXT(String[] eventNames, int choices ,JTextArea output1, JTextArea output2,String titleText, String descText)
+	{
+		String s="";
+		for(String event: eventNames)
+			s+=OutputDilemmaMainTXT(event, choices,  titleText,  descText);
+		output1.setText(s);
+		s="";
+		for(String event: eventNames)
+			s+=OutputDilemmaChoiceTXT(event, choices);
+		output2.setText(s);
+	}
+	
+
+	/*
+	 * KEY                                           Char Skill node set Key                   Char Skill Key                       blank(Faction key,campaign) TIER=3  indent=decimal blank(subculture) pointsOnCreation, Visible in UI, GameMode, true
+3k_main_skillset_historical_liu_bei_3_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_archer_2_flexibility_mlvl_3			3	2.9000000953674316		0	1	true	romance	true
+3k_main_skillset_historical_liu_bei_3D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_earth_5_meditation_mlvl_3			3	2.200000047683716		0	1	true		true
+3k_main_skillset_historical_liu_bei_3B	3k_main_skillset_historical_liu_bei	3k_main_ability_commander			3	0.800000011920929		1	1	true		true
+3k_main_skillset_historical_liu_bei_3A	3k_main_skillset_historical_liu_bei	3k_custom_liu_people			3	0.10000000149011612		0	1	true		true
+3k_main_skillset_historical_liu_bei_2E_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_earth_2_mobility_mlvl_3			1	2.9000000953674316		0	1	true	romance	true
+3k_main_skillset_historical_liu_bei_0A	3k_main_skillset_historical_liu_bei	3k_main_skill_int_clone			2	0.10000000149011612		0	1	true		true
+3k_main_skillset_historical_liu_bei_0B	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_metal_4_understanding_mlvl_3			2	0.800000011920929		0	1	true		true
+3k_main_skillset_historical_liu_bei_0C	3k_main_skillset_historical_liu_bei	3k_commander_dignity_clone			2	1.5		0	1	true		true
+3k_main_skillset_historical_liu_bei_0D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_metal_3_zeal_mlvl_3			2	2.200000047683716		0	1	true		true
+3k_main_skillset_historical_liu_bei_0E	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_natures_ally			2	2.9000000953674316		0	1	true		true
+3k_main_skillset_historical_liu_bei_1A	3k_main_skillset_historical_liu_bei	3k_main_liu_changban			0	0.10000000149011612		1	1	true		true
+3k_main_skillset_historical_liu_bei_1B	3k_main_skillset_historical_liu_bei	3k_main_cao_cao			0	0.800000011920929		1	1	true		true
+3k_main_skillset_historical_liu_bei_1C	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_stone_bulwark			0	1.5		1	1	true		true
+3k_main_skillset_historical_liu_bei_1D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_strategist_3_composure_mlvl_3			0	2.200000047683716		0	1	true		true
+3k_main_skillset_historical_liu_bei_1E	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_archer_4_perception_mlvl_3			0	2.9000000953674316		0	1	true		true
+3k_main_skillset_historical_liu_bei_2C_romance	3k_main_skillset_historical_liu_bei	3k_main_boost			1	1.5		0	1	true	romance	true
+3k_main_skillset_historical_liu_bei_2A_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_inspiring_words			1	0.10000000149011612		1	1	true	romance	true
+3k_main_skillset_historical_liu_bei_2B	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_fire_5_dignity_mlvl_3			1	0.800000011920929		0	1	true		true
+3k_main_skillset_historical_liu_bei_2D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_fire_1_intensity_mlvl_3			1	2.200000047683716		0	1	true		true
+	 */
+	
+	
+	
+	
+	/* OLD METHODS (Non GUI)
+	 * These methods were used for oddly specific behavior by me
+	 * and ran through the IDE driver, not the GUI application.
+	 * The logic here was adapted from a different project I made,
+	 * and best use for TW is to search through the users workshop folders
+	 * and output a list of mod file names so you don't have to go and open
+	 * every folder and inspect or try to global search by keywords.
+	 * I might include some version of this functionality in the GUI.
+	 * */
 	public void TraceProgram(String path, String lastFolder) throws IOException
 	{
 		if(programName==null) {Driver.print("null"); return;}
@@ -363,121 +880,7 @@ public class Parser {
 			Driver.print("_bad_"+k);
 		}
 	}
-	/**
-	 * Takes in values to generate new Cdir_event_option_lines (works for dilemmas or incidents)
-	 * @param startingIndex (int)
-	 * @param eventKey  (string)
-	 * @param targetChars (ArrayList<String>)
-	 * @param targetFactions (ArrayList<String>)
-	 * @param targetRegions (ArrayList<String>)
-	 */
-	public void OutputNewEventOptionLines(int startingIndex, String eventKey, ArrayList<String> targetChars,ArrayList<String> targetFactions,ArrayList<String> targetRegions, JTextArea output1, JTextArea output2)
-	{
-		String spacing1= "	";
-		String spacing2= "	";
-		String spacing3= "	";
-		String spacing4= "	"; 
-		int index= startingIndex;
-		String s="";
-		s+=((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default"+"\n");
-		s+=((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1"+"\n");
-		//Ini the vars for factions 
-		String target="target_faction_";
-		int targetCount=1;
-		String cndTarget="GEN_TARGET_FACTION";
-		String cndTemplate="GEN_CND_FACTION";
-		for(String k: targetFactions)
-		{
-			if(k.equals("default"))
-			{
-				s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
-				targetCount++;
-			}
-			else
-			{
-				s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
-				s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount)+"\n");
-				targetCount++;
-			}
-		}
-		//reset vars for chars 
-		target="target_character_";
-		targetCount=1;
-		cndTarget="GEN_TARGET_CHARACTER";
-		cndTemplate="GEN_CND_CHARACTER_TEMPLATE";
-		for(String k: targetChars)
-		{
-			s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
-			s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount)+"\n");
-			targetCount++;
-		}
-		//reset for regions
-		target="target_region_";
-		targetCount=1;
-		cndTarget="GEN_TARGET_REGION";
-		cndTemplate="GEN_CND_REGION";
-		for(String k: targetRegions)
-		{
-			s+=((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount)+"\n");
-			s+=((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount)+"\n");
-			targetCount++;
-		}
-		output1.setText(s);
-	}
-	/**
-	 *Deprecated Used for Testing, Prints to console
-	 * @param startingIndex
-	 * @param eventKey
-	 * @param targetChars
-	 * @param targetFactions
-	 * @param targetRegions
-	 */
-	public void OutputNewEventOptionLines(int startingIndex, String eventKey, ArrayList<String> targetChars,ArrayList<String> targetFactions,ArrayList<String> targetRegions)
-	{
-		String spacing1= "	";
-		String spacing2= "	";
-		String spacing3= "	";
-		String spacing4= "	"; 
-		int index= startingIndex;
-
-
-		Driver.print((index++)+spacing1+eventKey+spacing2+"VAR_CHANCE"+spacing3+8000+spacing4+"default");
-		Driver.print((index++)+spacing1+eventKey+spacing2+"GEN_CND_SELF"+spacing3+""+spacing4+"target_faction_1");
-		//Initialize vars for chars 
-		String target="target_character_";
-		int targetCount=1;
-		String cndTarget="GEN_TARGET_CHARACTER";
-		String cndTemplate="GEN_CND_CHARACTER_TEMPLATE";
-		for(String k: targetChars)
-		{
-			Driver.print((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount));
-			Driver.print((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount));
-			targetCount++;
-		}
-		//reset the vars for factions 
-		target="target_faction_";
-		targetCount=1;
-		cndTarget="GEN_TARGET_FACTION";
-		cndTemplate="GEN_CND_FACTION";
-		for(String k: targetFactions)
-		{
-			Driver.print((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount));
-			Driver.print((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount));
-			targetCount++;
-		}
-		target="target_region_";
-		targetCount=1;
-		cndTarget="GEN_TARGET_REGION";
-		cndTemplate="GEN_CND_REGION";
-		for(String k: targetRegions)
-		{
-			Driver.print((index++)+spacing1+eventKey+spacing2+cndTarget+spacing3+""+spacing4+target+(targetCount));
-			Driver.print((index++)+spacing1+eventKey+spacing2+cndTemplate+spacing3+k+spacing4+target+(targetCount));
-			targetCount++;
-		}
-	}
-
-	/** 
+	/** DEPRECATED
 	 * Takes in a path to a file that contains the dilemma payloads you want cloned, and a list of eventKeys you want to use.
 	 * Prints the new payload lines with incremented indicies and event names.
 	 * @param path (location+fileName.extension) File should include the lines of the payloads you want cloned
@@ -528,441 +931,4 @@ public class Parser {
 
 		}
 	}
-	private String DecideTargetKey(eTargetType target)
-	{
-		String s = null;
-		if(target==eTargetType.Target_Character_1 || target==eTargetType.Target_Character_2)
-			s="GEN_CND_CHARACTER_TEMPLATE";
-		else if(target==eTargetType.Target_Faction_1 || target==eTargetType.Target_Faction_2)
-			s="GEN_CND_FACTION";
-		else if(target==eTargetType.Target_Region_1 || target==eTargetType.Target_Region_2)
-			s="GEN_CND_REGION";
-		else if (target==eTargetType.KEY_SEARCH)
-			s="KEY_SEARCH";
-		return s;
-	}
-	private String DecideTargetIndex(eTargetType target)
-	{
-		String s = null;
-		if(target==eTargetType.Target_Character_1)
-			s="target_character_1";
-		else if(target==eTargetType.Target_Character_2)
-			s="target_character_2";
-		else if(target==eTargetType.Target_Faction_1)
-			s="target_faction_1";
-		else if( target==eTargetType.Target_Faction_2)
-			s="target_faction_2";
-		else if(target==eTargetType.Target_Region_1)
-			s="target_region_1";
-		else if( target==eTargetType.Target_Region_2)
-			s="target_region_2";
-		else if (target==eTargetType.KEY_SEARCH)
-			s="KEY_SEARCH";
-		return s;
-	}
-	public void OutputClonedEventLinesRaw(String Input, String eventKeys, eTargetType target, String type, String OptionalText, boolean overrideKey, JTextArea output1, JTextArea output2) 
-	{
-		//Driver.print("OutputClonedEventLinesRaw");
-		int startingIndex=0;
-		String spacing1="	";
-		String initialEvent="";
-		String initialPreface="";
-		String ReplacementKey="";
-		String lastReplacementKey=""; //Used by Clone raw input text keySearch
-		ArrayList<String> lines= new ArrayList<String>();
-		String[] linesIn = Input.split("\n");
-		String[] eventKeys1 = eventKeys.split("\n");
-		String targetKey = DecideTargetKey(target);
-		String targetIndex= DecideTargetIndex(target);
-
-		//Driver.print("linesIN="+linesIn.length);
-		//Driver.print("eventKeys1="+eventKeys1.length);
-		//Driver.print("targetKey"+targetKey);
-		//Driver.print("targetIndex"+targetIndex);
-		String newKeys="";
-		String finalReturn="";
-		boolean skip=false;
-		boolean keySearch;
-
-		boolean firstLine=true;
-		for(String keys: eventKeys1)
-		{
-			skip=false;
-			keySearch = (DecideTargetKey(target).equals("KEY_SEARCH"));
-			if(keySearch)
-			{
-				//firstLine=true;
-				targetKey="KEY_SEARCH";
-			}
-
-			if(keys.equals(""))
-				skip=true;
-			if(overrideKey)
-				ReplacementKey= "";
-			else 
-			{
-				if (targetKey.equals("GEN_CND_REGION"))
-				{ 
-					if (keys.contains("_sea_")) 
-					{output1.setText("Skip seas/rivers, " +keys);
-					skip=true;
-					}
-					if(!skip)
-					{
-						//"3k_main_dongjun_capital" --> "dongjun" or "3k_main_dongjun_resource_1" -->"dongjun"
-						int index= keys.indexOf("_capital");
-						if (index==-1)
-						{
-							index= keys.indexOf("_resource");
-							if(index==-1)
-							{
-								if(keys.indexOf("_pass")!=-1)
-									skip=true;
-								else {
-									output1.setText("InvalidEntry for region, needs _capital or _resource: "+keys);
-									return;
-								}
-							}
-							else
-							{output1.setText("TMP turned off for resource, " +keys);
-							skip=true;
-							}
-						}
-					}
-					int offset=8;
-					int index2=keys.indexOf("3k_main_");
-					if(index2==-1)
-					{
-						offset=9;	
-						index2=keys.indexOf("3k_dlc06_");
-					}
-					if(index2==-1)  
-					{output1.setText("InvalidEntry for region, needs prefix '3k_main' or '3k_dlc06:  '"+keys);
-					return;
-					}
-					//ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
-					ReplacementKey=keys.substring(index2+offset, keys.length());
-				}
-				else if (targetKey.equals("GEN_CND_FACTION"))
-				{ //"3k_main_faction_cao_cao" --> "cao_cao"
-					int index= keys.indexOf("_faction");
-					if(index==-1)
-					{output1.setText("InvalidEntry for faction name, needs _faction");
-					return;
-					}
-					ReplacementKey=keys.substring(keys.indexOf("_faction")+9, keys.length());
-				}
-				else if (targetKey.equals("GEN_CND_CHARACTER_TEMPLATE"))
-				{ //"3k_main_template_historical_lu_bu_hero_fire" --> "lu_bu" 
-					//"3k_dlc05_template_historical_lu_bu_hero_fire" --> "lu_bu" 
-					String id="_template_historical_";
-					int index= keys.indexOf(id);
-					if (index==-1){output1.setText("InvalidEntry for Character, needs _template_historical");return;}
-					else 
-					{
-						if (keys.indexOf("_hero")==-1){output1.setText("InvalidEntry for Character, needs _hero");return;}
-					}
-					ReplacementKey=keys.substring(index+id.length(), keys.indexOf("_hero"));
-				}
-				else if(targetKey.equals("KEY_SEARCH"))
-				{
-					keySearch=true;
-				}
-				else
-				{
-					ReplacementKey= "TODO";
-				}
-			}
-			if(!skip)
-			{
-				for(int i =0; i< linesIn.length; ++i)
-				{ 	
-					String line= linesIn[i];
-					if (line.equals(""))
-						break;
-
-					keySearch = (DecideTargetKey(target).equals("KEY_SEARCH"));
-					if(keySearch&&!firstLine)
-					{
-						//Check if the line contains the string to replace
-						//replace it 
-						//make it so the #s are separate from the rest of the line.
-						if(line.contains(OptionalText))
-						{
-							line=line.replace(OptionalText, keys);
-							initialPreface="";
-							initialEvent= spacing1;
-							//used for new keys  //overrideKey ?
-							String noKey=line.substring(0,line.indexOf(spacing1));
-							ReplacementKey=line.substring(noKey.length()+spacing1.length(), line.length());
-							ReplacementKey=ReplacementKey.substring(0, ReplacementKey.indexOf(spacing1))+"\n";
-						}
-						//always add line for final print out
-						lines.add(line);
-					}
-
-					else if(firstLine)
-					{
-						if(overrideKey && keySearch)
-						{
-							if(line.contains(OptionalText))
-								line=line.replace(OptionalText, keys);
-							//always add line for final print out
-							lines.add(line);
-						}
-						else
-						{
-							//1000 3k_main_  gets the #1000
-							String noKey=line.substring(0,line.indexOf(spacing1));
-							//Driver.print("nokey="+noKey);		
-							if (firstLine)//first time through grab our starting Index and event key preface
-							{
-								startingIndex=0;
-								try{startingIndex=Integer.parseInt(noKey);}
-								catch(NumberFormatException e){startingIndex=0;}
-								startingIndex+=linesIn.length;
-								//Driver.print("STRTING INDEX="+startingIndex);
-								//Gets 1000 3k_main_whatever ==> 3k_main_whatever
-								initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
-								initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
-								//Driver.print("EventName="+initialEvent);
-								firstLine=false;
-								if(overrideKey) // if we are over riding the whole key, handle that at the end
-									initialPreface="";
-								else
-								{
-									if (keySearch)
-									{
-										Driver.print("LinesIn Size=" +linesIn.length);
-										Driver.print("KEYSEARCH=TRUE");
-										if(line.contains(OptionalText))
-										{
-											line=line.replace(OptionalText, keys);
-											initialPreface="";
-											initialEvent= spacing1;
-											//used for new keys 
-											ReplacementKey=line.substring(noKey.length()+spacing1.length(), line.length());
-											ReplacementKey=ReplacementKey.substring(0, ReplacementKey.indexOf(spacing1))+"\n";
-										}
-									}
-									else
-									{
-										if(initialEvent.indexOf("_")==-1)
-										{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
-										else if (initialEvent.indexOf("_")== initialEvent.lastIndexOf("_"))
-										{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
-										//Get the first 3k_main_whatever_name  ==> whatever_name  (gets rid of first two _'2 aka 3k_main_ )
-										initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
-										initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
-										initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
-										Driver.print("initialPreface="+initialPreface);
-
-									}
-								}
-							}
-							//Check if we need to replace anything, and add to list for later
-							CheckLine( line, keys,  spacing1,  targetKey, targetIndex,lines);
-
-						}
-					}
-					else
-						CheckLine( line, keys,  spacing1,  targetKey, targetIndex,lines);
-					//Create our new starting Index
-					//startingIndex+=lines.size();
-					String extraAppend="_";
-
-
-					for(String entry: lines)
-					{	
-						String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
-
-						//find and update the number id 
-						//Driver.print("initialEvent="+initialEvent);
-						//Driver.print("TMPENTRY="+tmpEntry);
-						//Driver.print("initialPreface"+initialPreface);
-						//Driver.print("ReplacementKey"+ReplacementKey);
-						//Driver.print("startingIndex"+startingIndex);
-						//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
-						//Driver.print("KEeySearch="+keySearch);
-						if(overrideKey)
-						{
-							if(keySearch)
-								finalReturn += (entry+"\n");
-							else //same refactor
-								finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
-
-						}
-						else
-						{
-							if(keySearch)
-								finalReturn += ((startingIndex++)+spacing1+tmpEntry+"\n");
-							else //same refactor
-								finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
-						}
-					}
-					if(!keySearch)
-					{
-						String tmp=initialPreface+OptionalText+ReplacementKey+extraAppend+type+"\n";
-						if(!lastReplacementKey.equals(tmp))
-						{
-							lastReplacementKey=tmp;
-							newKeys += tmp;
-						}
-					}
-					else
-					{  // why this first empty string check?
-						if(lastReplacementKey.equals("") || !lastReplacementKey.equals(ReplacementKey))	
-						{
-							newKeys+=ReplacementKey;
-							lastReplacementKey=ReplacementKey;
-						}
-					}
-					lines.clear();
-				}
-			}
-			output1.setText(newKeys);
-			output2.setText(finalReturn);
-		}
-	}
-
-	public String OutputIncidentTitleTXT(String eventName, String titleTXT)
-	{
-		String title="incidents_localised_title_";
-		String spacing1= "	"; //double check 
-		//Driver.print(title+eventName+spacing1+"[PH]Title");
-		return title+eventName+spacing1+titleTXT+"\n";
-	}
-	public String OutputIncidentDescTXT(String eventName, String descTXT)
-	{
-		String description="incidents_localised_description_";
-		String spacing1= "	"; //double check 
-		//Driver.print(description+eventName+spacing1+"[PH]Desc");
-		return description+eventName+spacing1+descTXT+"\n";
-	}
-	public String OutputIncidentTXT(ArrayList<String> eventNames)
-	{	String s="";
-	for(String event: eventNames)
-		s+=OutputIncidentTitleTXT(event, "[PH]Title");
-	for(String event: eventNames)
-		s+=OutputIncidentDescTXT(event, "[PH]Desc");
-	return s;
-	}
-
-	public void OutputIncidentTXT(String[] eventNames ,JTextArea output1, JTextArea output2, String titleText, String descText)
-	{	
-		String s="";
-		for(String event: eventNames)
-			s+=OutputIncidentTitleTXT(event, titleText);
-		output1.setText(s);
-		s="";
-		for(String event: eventNames)
-			s+=OutputIncidentDescTXT(event, descText);
-		output2.setText(s);
-	}
-	public String OutputDilemmaMainTXT(String eventName, int choices, String titleText, String descText)
-	{	String s="";
-	String title="dilemmas_localised_title_";
-	String description="dilemmas_localised_description_";
-	String spacing1= "	"; //double check 
-	//Driver.print(title+eventName+spacing1+"[PH]Title");
-	s+=(title+eventName+spacing1+titleText+"\n");
-	//Driver.print(description+eventName+spacing1+"[PH]Desc");
-	s+=(description+eventName+spacing1+descText+"\n");
-	//Driver.print(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title");
-
-	return s;
-	}
-	public String OutputDilemmaChoiceTXT(String eventName, int choices)
-	{	String s="";
-	String choiceTitle="cdir_events_dilemma_choice_details_localised_choice_title_";
-	String choiceLabel="cdir_events_dilemma_choice_details_localised_choice_label_";
-	String spacing1= "	"; //double check 
-	//Choices
-	s+=(choiceTitle+eventName+"FIRST"+spacing1+"[PH]button_title"+"\n");
-	if(choices>1)
-		s+=(choiceTitle+eventName+"SECOND"+spacing1+"[PH]button_title"+"\n");
-	if(choices>2)
-		s+=(choiceTitle+eventName+"THIRD"+spacing1+"[PH]button_title"+"\n");
-	if(choices>3)
-		s+=(choiceTitle+eventName+"FOURTH"+spacing1+"[PH]button_title"+"\n");
-	//labels
-	s+=(choiceLabel+eventName+"FIRST"+spacing1+"[PH]button_label"+"\n");
-	if(choices>1)
-		s+=(choiceLabel+eventName+"SECOND"+spacing1+"[PH]button_label"+"\n");
-	if(choices>2)
-		s+=(choiceLabel+eventName+"THIRD"+spacing1+"[PH]button_label"+"\n");
-	if(choices>3)
-		s+=(choiceLabel+eventName+"FOURTH"+spacing1+"[PH]button_label"+"\n");
-
-	return s;
-	}
-	public String OutputDilemmaTXT(ArrayList<String> eventNames, int choices,String titleText, String descText )
-	{
-		String s="";
-		for(String event: eventNames)
-			s+=OutputDilemmaMainTXT(event, choices, titleText,  descText);
-		for(String event: eventNames)
-			s+=OutputDilemmaChoiceTXT(event, choices);
-		return s;
-	}
-	public void OutputDilemmaTXT(String[] eventNames, int choices ,JTextArea output1, JTextArea output2,String titleText, String descText)
-	{
-		String s="";
-		for(String event: eventNames)
-			s+=OutputDilemmaMainTXT(event, choices,  titleText,  descText);
-		output1.setText(s);
-		s="";
-		for(String event: eventNames)
-			s+=OutputDilemmaChoiceTXT(event, choices);
-		output2.setText(s);
-	}
-	public static eTargetType eTargetType(int selectedIndex) {
-		return eTargetType.values()[selectedIndex];
-	}
-	private void CheckLine(String line,String keys, String spacing1, String targetKey,String targetIndex, ArrayList<String> lines)
-	{
-		//Check if we need to replace anything
-		if(line.contains(targetKey) && line.contains(targetIndex))
-		{
-			//Driver.print("TARGET KEY= "+targetKey);
-			//Driver.print("TargetIndex= "+targetIndex);
-			//Driver.print("REPLACE LINE= "+line);
-			//find whats in the middle of them 
-			String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
-			//Driver.print("LINEBEFORE= "+lineBefore);
-			String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
-			//Driver.print("LINEAFTER= "+lineAfter);
-			//if(keySearch)
-			//	line= lineBefore+keys+lineAfter;
-			//else
-			line= lineBefore+spacing1+keys+spacing1+lineAfter;
-			//Driver.print("LINE FINAL= "+line);
-		}
-		//Add to our modified list 
-		lines.add(line);
-	}
-
-	/*
-	 * KEY                                           Char Skill node set Key                   Char Skill Key                       blank(Faction key,campaign) TIER=3  indent=decimal blank(subculture) pointsOnCreation, Visible in UI, GameMode, true
-3k_main_skillset_historical_liu_bei_3_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_archer_2_flexibility_mlvl_3			3	2.9000000953674316		0	1	true	romance	true
-3k_main_skillset_historical_liu_bei_3D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_earth_5_meditation_mlvl_3			3	2.200000047683716		0	1	true		true
-3k_main_skillset_historical_liu_bei_3B	3k_main_skillset_historical_liu_bei	3k_main_ability_commander			3	0.800000011920929		1	1	true		true
-3k_main_skillset_historical_liu_bei_3A	3k_main_skillset_historical_liu_bei	3k_custom_liu_people			3	0.10000000149011612		0	1	true		true
-3k_main_skillset_historical_liu_bei_2E_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_earth_2_mobility_mlvl_3			1	2.9000000953674316		0	1	true	romance	true
-3k_main_skillset_historical_liu_bei_0A	3k_main_skillset_historical_liu_bei	3k_main_skill_int_clone			2	0.10000000149011612		0	1	true		true
-3k_main_skillset_historical_liu_bei_0B	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_metal_4_understanding_mlvl_3			2	0.800000011920929		0	1	true		true
-3k_main_skillset_historical_liu_bei_0C	3k_main_skillset_historical_liu_bei	3k_commander_dignity_clone			2	1.5		0	1	true		true
-3k_main_skillset_historical_liu_bei_0D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_metal_3_zeal_mlvl_3			2	2.200000047683716		0	1	true		true
-3k_main_skillset_historical_liu_bei_0E	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_natures_ally			2	2.9000000953674316		0	1	true		true
-3k_main_skillset_historical_liu_bei_1A	3k_main_skillset_historical_liu_bei	3k_main_liu_changban			0	0.10000000149011612		1	1	true		true
-3k_main_skillset_historical_liu_bei_1B	3k_main_skillset_historical_liu_bei	3k_main_cao_cao			0	0.800000011920929		1	1	true		true
-3k_main_skillset_historical_liu_bei_1C	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_stone_bulwark			0	1.5		1	1	true		true
-3k_main_skillset_historical_liu_bei_1D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_strategist_3_composure_mlvl_3			0	2.200000047683716		0	1	true		true
-3k_main_skillset_historical_liu_bei_1E	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_archer_4_perception_mlvl_3			0	2.9000000953674316		0	1	true		true
-3k_main_skillset_historical_liu_bei_2C_romance	3k_main_skillset_historical_liu_bei	3k_main_boost			1	1.5		0	1	true	romance	true
-3k_main_skillset_historical_liu_bei_2A_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_inspiring_words			1	0.10000000149011612		1	1	true	romance	true
-3k_main_skillset_historical_liu_bei_2B	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_fire_5_dignity_mlvl_3			1	0.800000011920929		0	1	true		true
-3k_main_skillset_historical_liu_bei_2D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_fire_1_intensity_mlvl_3			1	2.200000047683716		0	1	true		true
-	 */
-
 }
