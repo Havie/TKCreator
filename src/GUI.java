@@ -98,6 +98,7 @@ public class GUI implements ActionListener{
 	JPanel overrideOptionsPanel;
 	JTextField op1_text ;
 	JTextField op2_text ;
+	JLabel overrideDesc;
 
 	//Output
 	private JPanel centerPanel_output;
@@ -110,8 +111,8 @@ public class GUI implements ActionListener{
 
 	//finals
 	final String[] MODEOPTIONS= {"NEW", "CLONE"};
-	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text", "SKILLS"};
-	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2"};
+	final String[] DROPDOWNOPTIONS= {"Dilemma", "Incident", "Text", "SKills"};
+	final String[] TARGETOPTIONS= {"Target_Region_1", "Target_Region_2", "Target_Character_1", "Target_Character_2", "Target_Faction_1","Target_Faction_2", "Input_text"};
 	final String[] TEXTOPTIONS= {"Dilemma", "Incident"};
 	final Color[] VALID = {Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK};
 	final Color[] INVALID = {Color.BLACK, Color.BLACK, Color.RED, Color.RED};
@@ -352,7 +353,7 @@ public class GUI implements ActionListener{
 			SetGrabBagColumn( grabBagInput,  targetChoice, 2, 0, new Insets(1,10,1,10));
 			overrideOptionsPanel= new JPanel();
 			overrideOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 0));
-			JLabel overrideDesc= new JLabel("Key manipulation options:");
+			overrideDesc= new JLabel("Key manipulation options:");
 			overrideOptionsPanel.add(overrideDesc);
 			overrideOptionsPanel.add(Box.createRigidArea(new Dimension(30, 0)));
 			overrideOptionsPanel.add(lineChoice);
@@ -573,10 +574,11 @@ public class GUI implements ActionListener{
 		{
 			if(jf!=null)
 				{
-				jf.setMinimumSize(new Dimension(centerPanel.getWidth(),20));
-				jf.setPreferredSize(new Dimension(300,45)); //GridBag Lay out ignores this
+					jf.setMinimumSize(new Dimension(centerPanel.getWidth(),20));
+					jf.setPreferredSize(new Dimension(300,45)); //GridBag Lay out ignores this
 				}
 		}
+		lineChoice.setPreferredSize(new Dimension(120,20));
 	}
 	/**
 	 * A Little trick to change to color of drop down menu items
@@ -753,6 +755,25 @@ public class GUI implements ActionListener{
 					outlabel_left.setText("New Keys");
 					outlabel_right.setText("New Lines");
 				}
+				//Raw text replacement mode 
+				if(targetChoice.getSelectedIndex()==6)
+				{
+					//Hide the check box
+					//Make Key maniulation options say replace
+					//eventKeyOverride.setText("Replace");
+					eventKeyOverride.setText("No Numbers");
+					eventKeyOverride.setSelected(false);
+					overrideDesc.setText("Key to replace:");
+					lineChoice.setText("");
+				}
+				else
+				{
+					eventKeyOverride.setText("Insert");
+					eventKeyOverride.setSelected(false);
+					overrideDesc.setText("Key manipulation options:");
+					lineChoice.setText("Optional key addon");
+				}
+				
 			}
 			else if(box==modeChoiceDropdown) //Changed TYPE
 			{
@@ -799,23 +820,6 @@ public class GUI implements ActionListener{
 					
 					SetUpCloned(true);
 					setDropdownRender(false);
-					/*fieldInput.setText(lastKnownInput_1);
-					fieldInput2.setText(lastKnownInput_2);
-					fieldInput2.setVisible(true);
-					inlabel_left.setText("New Values");
-					inlabel_right.setText("Lines To Clone");
-					Driver.print("CHANGED TO New Keys");
-					outlabel_left.setText("New Keys");
-					outlabel_right.setText("New Lines");
-					targetChoice.removeAllItems();
-					lineChoice.setText("Optional key addon");
-					fieldOutput.setText("");
-					fieldOutput2.setText("");
-					//Driver.print("(1)DID THIS TRIGGER ACTION?");
-					for(String s : TARGETOPTIONS)
-						targetChoice.addItem(s);*/
-					
-
 				}
 
 			}
@@ -845,34 +849,12 @@ public class GUI implements ActionListener{
 			lastKnownInput_1=fieldInput.getText();
 			lastKnownInput_2=fieldInput2.getText();
 			SetUpCloned(false);
-			/*lastKnownInput_1=fieldInput.getText();
-			lastKnownInput_2=fieldInput2.getText();
-			fieldInput.setText(lastKnownInputText_1);
-			fieldInput2.setText(lastKnownInputText_2);
-			fieldInput2.setVisible(false);
-			inlabel_left.setText("Event Names");
-			inlabel_right.setText("Unused");
-			Driver.print(" CHANGED TO Titles/Descriptions");
-			outlabel_left.setText("Titles/Descriptions");
-			outlabel_right.setText("Choice Labels");
-			targetChoice.removeAllItems();
-			fieldOutput.setText("");
-			fieldOutput2.setText("");
-			lineChoice.setText("Enter # of Choices (dilemma only)");
-			for(String s : TEXTOPTIONS)
-				targetChoice.addItem(s); */
+
 
 
 			break;
 		case 3:
-			/*fieldInput.setVisible(false);
-			fieldInput2.setVisible(false);
-			scroll1.setVisible(false);
-			scroll2.setVisible(false);
-			scroll1_text.setVisible(true);
-			scroll2_text.setVisible(true);
-			fieldInput_text.setVisible(true);
-			fieldInput2_text.setVisible(true);*/
+			//unused
 			break;
 		default:
 			break;

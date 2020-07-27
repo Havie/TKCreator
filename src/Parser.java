@@ -23,7 +23,7 @@ public class Parser {
 	private String outputPath="C:\\Users\\TKout.txt";
 	private String programName="ignore";
 
-	public enum eTargetType {Target_Region_1, Target_Region_2, Target_Character_1, Target_Character_2, Target_Faction_1,Target_Faction_2};
+	public enum eTargetType {Target_Region_1, Target_Region_2, Target_Character_1, Target_Character_2, Target_Faction_1,Target_Faction_2, KEY_SEARCH};
 
 	public Parser()
 	{
@@ -537,6 +537,8 @@ public class Parser {
 			s="GEN_CND_FACTION";
 		else if(target==eTargetType.Target_Region_1 || target==eTargetType.Target_Region_2)
 			s="GEN_CND_REGION";
+		else if (target==eTargetType.KEY_SEARCH)
+			s="KEY_SEARCH";
 		return s;
 	}
 	private String DecideTargetIndex(eTargetType target)
@@ -554,6 +556,8 @@ public class Parser {
 			s="target_region_1";
 		else if( target==eTargetType.Target_Region_2)
 			s="target_region_2";
+		else if (target==eTargetType.KEY_SEARCH)
+			s="KEY_SEARCH";
 		return s;
 	}
 	public void OutputClonedEventLinesRaw(String Input, String eventKeys, eTargetType target, String type, String OptionalText, boolean overrideKey, JTextArea output1, JTextArea output2) 
@@ -564,6 +568,7 @@ public class Parser {
 		String initialEvent="";
 		String initialPreface="";
 		String ReplacementKey="";
+		String lastReplacementKey=""; //Used by Clone raw input text keySearch
 		ArrayList<String> lines= new ArrayList<String>();
 		String[] linesIn = Input.split("\n");
 		String[] eventKeys1 = eventKeys.split("\n");
@@ -577,11 +582,19 @@ public class Parser {
 		String newKeys="";
 		String finalReturn="";
 		boolean skip=false;
+		boolean keySearch;
 
 		boolean firstLine=true;
 		for(String keys: eventKeys1)
 		{
 			skip=false;
+			keySearch = (DecideTargetKey(target).equals("KEY_SEARCH"));
+			if(keySearch)
+			{
+				//firstLine=true;
+				targetKey="KEY_SEARCH";
+			}
+
 			if(keys.equals(""))
 				skip=true;
 			if(overrideKey)
@@ -589,26 +602,46 @@ public class Parser {
 			else 
 			{
 				if (targetKey.equals("GEN_CND_REGION"))
-				{ //"3k_main_dongjun_capital" --> "dongjun" or "3k_main_dongjun_resource_1" -->"dongjun"
-					int index= keys.indexOf("_capital");
-					if (index==-1)
+				{ 
+					if (keys.contains("_sea_")) 
+					{output1.setText("Skip seas/rivers, " +keys);
+					skip=true;
+					}
+					if(!skip)
 					{
-						index= keys.indexOf("_resource");
-						if(index==-1)
-						{output1.setText("InvalidEntry for region, needs _capital or _resource");
-						return;
-						}
-						else
-						{output1.setText("TMP turned off for resource, " +keys);
-						skip=true;
+						//"3k_main_dongjun_capital" --> "dongjun" or "3k_main_dongjun_resource_1" -->"dongjun"
+						int index= keys.indexOf("_capital");
+						if (index==-1)
+						{
+							index= keys.indexOf("_resource");
+							if(index==-1)
+							{
+								if(keys.indexOf("_pass")!=-1)
+									skip=true;
+								else {
+									output1.setText("InvalidEntry for region, needs _capital or _resource: "+keys);
+									return;
+								}
+							}
+							else
+							{output1.setText("TMP turned off for resource, " +keys);
+							skip=true;
+							}
 						}
 					}
-					if(keys.indexOf("3k_main_")==-1)
-					{output1.setText("InvalidEntry for region, needs prefix '3k_main'");
+					int offset=8;
+					int index2=keys.indexOf("3k_main_");
+					if(index2==-1)
+					{
+						offset=9;	
+						index2=keys.indexOf("3k_dlc06_");
+					}
+					if(index2==-1)  
+					{output1.setText("InvalidEntry for region, needs prefix '3k_main' or '3k_dlc06:  '"+keys);
 					return;
 					}
 					//ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, index);
-					ReplacementKey=keys.substring(keys.indexOf("3k_main_")+8, keys.length());
+					ReplacementKey=keys.substring(index2+offset, keys.length());
 				}
 				else if (targetKey.equals("GEN_CND_FACTION"))
 				{ //"3k_main_faction_cao_cao" --> "cao_cao"
@@ -631,6 +664,10 @@ public class Parser {
 					}
 					ReplacementKey=keys.substring(index+id.length(), keys.indexOf("_hero"));
 				}
+				else if(targetKey.equals("KEY_SEARCH"))
+				{
+					keySearch=true;
+				}
 				else
 				{
 					ReplacementKey= "TODO";
@@ -639,74 +676,153 @@ public class Parser {
 			if(!skip)
 			{
 				for(int i =0; i< linesIn.length; ++i)
-				{ 
+				{ 	
 					String line= linesIn[i];
 					if (line.equals(""))
 						break;
-					String noKey=line.substring(0,line.indexOf(spacing1));
-					//Driver.print("nokey="+noKey);		
-					if (firstLine)//first time through grab our starting Index and event key preface
-					{
-						startingIndex=0;
-						try{startingIndex=Integer.parseInt(noKey);}
-						catch(NumberFormatException e){startingIndex=0;}
 
-						initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
-						initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
-						//Driver.print("EventName="+initialEvent);
-						firstLine=false;
-						if(overrideKey)
+					keySearch = (DecideTargetKey(target).equals("KEY_SEARCH"));
+					if(keySearch&&!firstLine)
+					{
+						//Check if the line contains the string to replace
+						//replace it 
+						//make it so the #s are separate from the rest of the line.
+						if(line.contains(OptionalText))
+						{
+							line=line.replace(OptionalText, keys);
 							initialPreface="";
+							initialEvent= spacing1;
+							//used for new keys  //overrideKey ?
+							String noKey=line.substring(0,line.indexOf(spacing1));
+							ReplacementKey=line.substring(noKey.length()+spacing1.length(), line.length());
+							ReplacementKey=ReplacementKey.substring(0, ReplacementKey.indexOf(spacing1))+"\n";
+						}
+						//always add line for final print out
+						lines.add(line);
+					}
+
+					else if(firstLine)
+					{
+						if(overrideKey && keySearch)
+						{
+							if(line.contains(OptionalText))
+								line=line.replace(OptionalText, keys);
+							//always add line for final print out
+							lines.add(line);
+						}
 						else
 						{
-							if(initialEvent.indexOf("_")==-1)
+							//1000 3k_main_  gets the #1000
+							String noKey=line.substring(0,line.indexOf(spacing1));
+							//Driver.print("nokey="+noKey);		
+							if (firstLine)//first time through grab our starting Index and event key preface
 							{
-								output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
-							else if (initialEvent.indexOf("_")== initialEvent.lastIndexOf("_"))
-							{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
-							initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
-							initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
-							initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
-							//Driver.print("initialPreface="+initialPreface);
+								startingIndex=0;
+								try{startingIndex=Integer.parseInt(noKey);}
+								catch(NumberFormatException e){startingIndex=0;}
+								startingIndex+=linesIn.length;
+								//Driver.print("STRTING INDEX="+startingIndex);
+								//Gets 1000 3k_main_whatever ==> 3k_main_whatever
+								initialEvent=line.substring(noKey.length()+spacing1.length(), line.length());
+								initialEvent=initialEvent.substring(0, initialEvent.indexOf(spacing1));
+								//Driver.print("EventName="+initialEvent);
+								firstLine=false;
+								if(overrideKey) // if we are over riding the whole key, handle that at the end
+									initialPreface="";
+								else
+								{
+									if (keySearch)
+									{
+										Driver.print("LinesIn Size=" +linesIn.length);
+										Driver.print("KEYSEARCH=TRUE");
+										if(line.contains(OptionalText))
+										{
+											line=line.replace(OptionalText, keys);
+											initialPreface="";
+											initialEvent= spacing1;
+											//used for new keys 
+											ReplacementKey=line.substring(noKey.length()+spacing1.length(), line.length());
+											ReplacementKey=ReplacementKey.substring(0, ReplacementKey.indexOf(spacing1))+"\n";
+										}
+									}
+									else
+									{
+										if(initialEvent.indexOf("_")==-1)
+										{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+										else if (initialEvent.indexOf("_")== initialEvent.lastIndexOf("_"))
+										{output1.setText("Cloned key formatting incorrect, needs format similar to '3k_something_name'");return;}
+										//Get the first 3k_main_whatever_name  ==> whatever_name  (gets rid of first two _'2 aka 3k_main_ )
+										initialPreface= initialEvent.substring(initialEvent.indexOf("_")+1, initialEvent.lastIndexOf("_"));
+										initialPreface= initialPreface.substring(initialPreface.indexOf("_")+1, initialPreface.length());
+										initialPreface=initialEvent.substring(0, initialEvent.indexOf(initialPreface));
+										Driver.print("initialPreface="+initialPreface);
+
+									}
+								}
+							}
+							//Check if we need to replace anything, and add to list for later
+							CheckLine( line, keys,  spacing1,  targetKey, targetIndex,lines);
+
 						}
 					}
-					//Check if we need to replace anything
-					if(line.contains(targetKey) && line.contains(targetIndex))
-					{
-						//Driver.print("REPLACE LINE= "+line);
-						//find whats in the middle of them 
-						String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
-						//Driver.print("LINEBEFORE= "+lineBefore);
-						String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
-						//Driver.print("LINEAFTER= "+lineAfter);
-						line= lineBefore+spacing1+keys+spacing1+lineAfter;
-						//Driver.print("LINE FINAL= "+line);
+					else
+						CheckLine( line, keys,  spacing1,  targetKey, targetIndex,lines);
+					//Create our new starting Index
+					//startingIndex+=lines.size();
+					String extraAppend="_";
+
+
+					for(String entry: lines)
+					{	
+						String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
+
+						//find and update the number id 
+						//Driver.print("initialEvent="+initialEvent);
+						//Driver.print("TMPENTRY="+tmpEntry);
+						//Driver.print("initialPreface"+initialPreface);
+						//Driver.print("ReplacementKey"+ReplacementKey);
+						//Driver.print("startingIndex"+startingIndex);
+						//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
+						//Driver.print("KEeySearch="+keySearch);
+						if(overrideKey)
+						{
+							if(keySearch)
+								finalReturn += (entry+"\n");
+							else //same refactor
+								finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
+
+						}
+						else
+						{
+							if(keySearch)
+								finalReturn += ((startingIndex++)+spacing1+tmpEntry+"\n");
+							else //same refactor
+								finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
+						}
 					}
-					//Add to our modified list 
-					lines.add(line);
+					if(!keySearch)
+					{
+						String tmp=initialPreface+OptionalText+ReplacementKey+extraAppend+type+"\n";
+						if(!lastReplacementKey.equals(tmp))
+						{
+							lastReplacementKey=tmp;
+							newKeys += tmp;
+						}
+					}
+					else
+					{  // why this first empty string check?
+						if(lastReplacementKey.equals("") || !lastReplacementKey.equals(ReplacementKey))	
+						{
+							newKeys+=ReplacementKey;
+							lastReplacementKey=ReplacementKey;
+						}
+					}
+					lines.clear();
 				}
-				//Create our new starting Index
-				startingIndex=startingIndex+lines.size();
-				String extraAppend="_";
-
-				for(String entry: lines)
-				{
-					//find and update the number id 
-					String tmpEntry = entry.substring(entry.indexOf(initialEvent)+initialEvent.length(), entry.length());
-					//Driver.print("TMPENTRY="+tmpEntry);
-					//Driver.print("initialPreface"+initialPreface);
-					//Driver.print("ReplacementKey"+ReplacementKey);
-					//Driver.print("startingIndex"+startingIndex++);
-					//Driver.print((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+"_"+type+tmpEntry);
-
-					finalReturn += ((startingIndex++)+spacing1+initialPreface+OptionalText+ReplacementKey+extraAppend+type+tmpEntry+"\n");
-				}
-				newKeys += initialPreface+OptionalText+ReplacementKey+extraAppend+type+"\n";
-				lines.clear();
 			}
+			output1.setText(newKeys);
+			output2.setText(finalReturn);
 		}
-		output1.setText(newKeys);
-		output2.setText(finalReturn);
 	}
 
 	public String OutputIncidentTitleTXT(String eventName, String titleTXT)
@@ -803,6 +919,50 @@ public class Parser {
 	public static eTargetType eTargetType(int selectedIndex) {
 		return eTargetType.values()[selectedIndex];
 	}
+	private void CheckLine(String line,String keys, String spacing1, String targetKey,String targetIndex, ArrayList<String> lines)
+	{
+		//Check if we need to replace anything
+		if(line.contains(targetKey) && line.contains(targetIndex))
+		{
+			//Driver.print("TARGET KEY= "+targetKey);
+			//Driver.print("TargetIndex= "+targetIndex);
+			//Driver.print("REPLACE LINE= "+line);
+			//find whats in the middle of them 
+			String lineBefore=line.substring(0, line.indexOf(targetKey)+targetKey.length());
+			//Driver.print("LINEBEFORE= "+lineBefore);
+			String lineAfter=line.substring(line.indexOf(targetIndex), line.length());
+			//Driver.print("LINEAFTER= "+lineAfter);
+			//if(keySearch)
+			//	line= lineBefore+keys+lineAfter;
+			//else
+			line= lineBefore+spacing1+keys+spacing1+lineAfter;
+			//Driver.print("LINE FINAL= "+line);
+		}
+		//Add to our modified list 
+		lines.add(line);
+	}
 
+	/*
+	 * KEY                                           Char Skill node set Key                   Char Skill Key                       blank(Faction key,campaign) TIER=3  indent=decimal blank(subculture) pointsOnCreation, Visible in UI, GameMode, true
+3k_main_skillset_historical_liu_bei_3_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_archer_2_flexibility_mlvl_3			3	2.9000000953674316		0	1	true	romance	true
+3k_main_skillset_historical_liu_bei_3D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_earth_5_meditation_mlvl_3			3	2.200000047683716		0	1	true		true
+3k_main_skillset_historical_liu_bei_3B	3k_main_skillset_historical_liu_bei	3k_main_ability_commander			3	0.800000011920929		1	1	true		true
+3k_main_skillset_historical_liu_bei_3A	3k_main_skillset_historical_liu_bei	3k_custom_liu_people			3	0.10000000149011612		0	1	true		true
+3k_main_skillset_historical_liu_bei_2E_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_earth_2_mobility_mlvl_3			1	2.9000000953674316		0	1	true	romance	true
+3k_main_skillset_historical_liu_bei_0A	3k_main_skillset_historical_liu_bei	3k_main_skill_int_clone			2	0.10000000149011612		0	1	true		true
+3k_main_skillset_historical_liu_bei_0B	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_metal_4_understanding_mlvl_3			2	0.800000011920929		0	1	true		true
+3k_main_skillset_historical_liu_bei_0C	3k_main_skillset_historical_liu_bei	3k_commander_dignity_clone			2	1.5		0	1	true		true
+3k_main_skillset_historical_liu_bei_0D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_metal_3_zeal_mlvl_3			2	2.200000047683716		0	1	true		true
+3k_main_skillset_historical_liu_bei_0E	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_natures_ally			2	2.9000000953674316		0	1	true		true
+3k_main_skillset_historical_liu_bei_1A	3k_main_skillset_historical_liu_bei	3k_main_liu_changban			0	0.10000000149011612		1	1	true		true
+3k_main_skillset_historical_liu_bei_1B	3k_main_skillset_historical_liu_bei	3k_main_cao_cao			0	0.800000011920929		1	1	true		true
+3k_main_skillset_historical_liu_bei_1C	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_stone_bulwark			0	1.5		1	1	true		true
+3k_main_skillset_historical_liu_bei_1D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_strategist_3_composure_mlvl_3			0	2.200000047683716		0	1	true		true
+3k_main_skillset_historical_liu_bei_1E	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_water_archer_4_perception_mlvl_3			0	2.9000000953674316		0	1	true		true
+3k_main_skillset_historical_liu_bei_2C_romance	3k_main_skillset_historical_liu_bei	3k_main_boost			1	1.5		0	1	true	romance	true
+3k_main_skillset_historical_liu_bei_2A_romance	3k_main_skillset_historical_liu_bei	3k_main_skill_special_ability_earth_inspiring_words			1	0.10000000149011612		1	1	true	romance	true
+3k_main_skillset_historical_liu_bei_2B	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_fire_5_dignity_mlvl_3			1	0.800000011920929		0	1	true		true
+3k_main_skillset_historical_liu_bei_2D	3k_main_skillset_historical_liu_bei	3k_main_skill_mastery_fire_1_intensity_mlvl_3			1	2.200000047683716		0	1	true		true
+	 */
 
 }
